@@ -1,7 +1,14 @@
 import SignInForm from "@/components/auth/SignInForm";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 
@@ -37,19 +44,24 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f4f4f4]">
-      <ScrollView>
-        <View className="flex-1 justify-center p-6 mt-[96px]">
-          <View className="gap-2">
-            <Text className="text-[#E6491E] text-[34px] font-bold">
-              Let's Sign you in.
-            </Text>
-            <Text className="text-black/75 text-lg">Welcome Back.</Text>
-          </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <SafeAreaView className="flex-1 bg-[#f4f4f4]">
+        <ScrollView>
+          <View className="flex-1 justify-center p-6 mt-[96px]">
+            <View className="gap-2">
+              <Text className="text-[#E6491E] text-[34px] font-bold">
+                Let's Sign you in.
+              </Text>
+              <Text className="text-black/75 text-lg">Welcome Back.</Text>
+            </View>
 
-          <SignInForm onSignIn={handleSignIn} loading={loading} />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            <SignInForm onSignIn={handleSignIn} loading={loading} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
