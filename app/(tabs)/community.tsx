@@ -1,10 +1,13 @@
 import CommunityPostCard from "@/components/CommunityPostCard";
 import PageHeader from "@/components/pageHeader";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CommunityPage() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Community Posts" />
@@ -47,7 +50,7 @@ No registration needed—just come by! Let's support each other. ❤️`}
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}
-        onPress={() => console.log("Create new post")}
+        onPress={() => router.push("/new-post")}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
       </TouchableOpacity>

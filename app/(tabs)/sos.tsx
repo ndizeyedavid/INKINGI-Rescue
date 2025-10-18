@@ -1,5 +1,6 @@
 import EmergencyCard from "@/components/EmergencyCard";
 import PageHeader from "@/components/pageHeader";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ScrollView,
@@ -12,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SosPage() {
   const [activeTab, setActiveTab] = useState<"you" | "others">("you");
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -53,7 +55,15 @@ export default function SosPage() {
       {/* Content Area */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === "you" ? (
-          <View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() =>
+              router.push({
+                pathname: "/view-sos",
+                params: { emergencyType: "Road Accident" },
+              })
+            }
+          >
             <EmergencyCard
               location="Kimisagara, KK 301"
               icon="car-crash"
@@ -62,7 +72,7 @@ export default function SosPage() {
               isMine={true}
               onDelete={() => console.log("Delete emergency")}
             />
-          </View>
+          </TouchableOpacity>
         ) : (
           <View>
             <EmergencyCard

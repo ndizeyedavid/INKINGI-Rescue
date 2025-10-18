@@ -1,8 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function AppLayout() {
+  const router = useRouter();
+
   return (
     <Tabs
       screenOptions={{
