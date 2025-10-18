@@ -45,7 +45,7 @@ const SignInForm: React.FC<SignInFormProps> = ({
       </View>
 
       <View>
-        <Button>Login</Button>
+        <Button onPress={handleSignIn}>Login</Button>
       </View>
 
       <View className="mt-[22px] ">

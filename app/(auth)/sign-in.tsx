@@ -38,9 +38,8 @@ export default function SignInScreen() {
     );
   };
 
-  const handleSignUp = () => {
-    // Navigate to sign up screen
-    router.push("/(auth)/sign-up");
+  const handleRedirect = () => {
+    router.push("/(auth)/Permission");
   };
 
   return (
@@ -58,7 +57,7 @@ export default function SignInScreen() {
               <Text className="text-black/75 text-lg">Welcome Back.</Text>
             </View>
 
-            <SignInForm onSignIn={handleSignIn} loading={loading} />
+            <SignInForm onSignIn={handleRedirect} loading={loading} />
           </View>
         </ScrollView>
       </SafeAreaView>

@@ -3,9 +3,10 @@ import { Text, TouchableOpacity } from "react-native";
 interface IButton {
   className?: string;
   children: string;
+  onPress?: () => void;
 }
 
-export default function Button({ className, children }: IButton) {
+export default function Button({ className, children, onPress }: IButton) {
   return (
     <TouchableOpacity
       className={
@@ -14,6 +15,7 @@ export default function Button({ className, children }: IButton) {
         className
       }
       activeOpacity={0.8}
+      onPress={onPress}
     >
       <Text className="text-white">{children}</Text>
     </TouchableOpacity>

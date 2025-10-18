@@ -8,12 +8,10 @@ import { AuthProvider } from "../context/AuthContext";
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-        initialRouteName="(splash)/splash"
-      />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack>
+      {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />
     </AuthProvider>
   );
