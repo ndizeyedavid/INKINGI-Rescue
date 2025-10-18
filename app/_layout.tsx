@@ -61,6 +61,102 @@ export default function RootLayout() {
             ),
           })}
         />
+        <Stack.Screen
+          name="account-details"
+          options={{
+            title: "Account Details",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="setup-sos"
+          options={{
+            title: "Setup SoS",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="about"
+          options={{
+            title: "About",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
       </Stack>
       {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />
