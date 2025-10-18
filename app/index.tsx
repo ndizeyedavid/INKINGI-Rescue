@@ -1,13 +1,33 @@
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 
 export default function Index() {
+  const router = useRouter();
+
+  const handleRedirect = () => {
+    router.push("/(auth)/sign-in");
+  };
+
   return (
-    <View className="flex-1 items-center justify-center bg-green-500">
-      <Text className="text-xl font-bold text-black ">
-        Welcome to Nativewind!
-      </Text>
-      <View className="p-10 w-8 h-8 bg-black rounded-full mt-4 active:bg-red-800 active:p-5"></View>
-    </View>
+    <SafeAreaView
+      onTouchStart={handleRedirect}
+      className="bg-[#f4f4f4] h-screen"
+    >
+      <View className="flex-1 justify-center items-center">
+        <Image
+          source={require("../assets/images/logo.png")}
+          className="w-[144px] h-[144px] object-contain"
+        />
+        <Text
+          className="font-bold mt-[14px]"
+          style={{ fontSize: 36, color: "#E6491E" }}
+        >
+          INKINGI
+        </Text>
+        <Text style={{ fontSize: 23, color: "#E6491E" }}>Rescue</Text>
+      </View>
+    </SafeAreaView>
   );
 }
