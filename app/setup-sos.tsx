@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +14,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type TabType = "contacts" | "hotlines" | "panic";
 
 export default function SetupSos() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("contacts");
+
+  const handleCall = (phoneNumber: string) => {
+    const phoneUrl = `tel:${phoneNumber}`;
+    Linking.canOpenURL(phoneUrl)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(phoneUrl);
+        } else {
+          console.log("Phone dialer is not available");
+        }
+      })
+      .catch((err) => console.error("Error opening dialer:", err));
+  };
 
   const [emergencyContacts] = useState([
     { id: 1, name: "Mom", phone: "+250 788 111 222", relation: "Mother" },
@@ -108,7 +124,10 @@ export default function SetupSos() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Emergency Contacts</Text>
-              <TouchableOpacity activeOpacity={0.7}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/add-emergency-contact")}
+              >
                 <Ionicons name="add-circle" size={28} color="#e6491e" />
               </TouchableOpacity>
             </View>
@@ -129,7 +148,11 @@ export default function SetupSos() {
                       {contact.relation}
                     </Text>
                   </View>
-                  <TouchableOpacity style={styles.contactAction}>
+                  <TouchableOpacity
+                    style={styles.contactAction}
+                    onPress={() => router.push("/edit-emergency-contact")}
+                    activeOpacity={0.7}
+                  >
                     <Ionicons name="create-outline" size={20} color="#666666" />
                   </TouchableOpacity>
                 </View>
@@ -148,11 +171,7 @@ export default function SetupSos() {
 
             <View style={styles.hotlinesList}>
               {hotlines.map((hotline) => (
-                <TouchableOpacity
-                  key={hotline.id}
-                  style={styles.hotlineCard}
-                  activeOpacity={0.7}
-                >
+                <View key={hotline.id} style={styles.hotlineCard}>
                   <View style={styles.hotlineLeft}>
                     <View style={styles.hotlineIcon}>
                       <Ionicons
@@ -166,10 +185,14 @@ export default function SetupSos() {
                       <Text style={styles.hotlineNumber}>{hotline.number}</Text>
                     </View>
                   </View>
-                  <View style={styles.callButton}>
+                  <TouchableOpacity
+                    style={styles.callButton}
+                    onPress={() => handleCall(hotline.number)}
+                    activeOpacity={0.7}
+                  >
                     <Ionicons name="call" size={20} color="#ffffff" />
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
               ))}
             </View>
           </View>
@@ -180,7 +203,10 @@ export default function SetupSos() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Panic Buttons</Text>
-              <TouchableOpacity activeOpacity={0.7}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/setup-panic-button")}
+              >
                 <Ionicons name="add-circle" size={28} color="#e6491e" />
               </TouchableOpacity>
             </View>
@@ -194,6 +220,7 @@ export default function SetupSos() {
                   key={button.id}
                   style={styles.panicCard}
                   activeOpacity={0.7}
+                  onPress={() => router.push("/edit-panic-button")}
                 >
                   <View
                     style={[

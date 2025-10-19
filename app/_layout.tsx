@@ -301,6 +301,106 @@ export default function RootLayout() {
             ),
           }}
         />
+
+        <Stack.Screen
+          name="add-emergency-contact"
+          options={{
+            title: "Add Emergency Contact",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+
+        <Stack.Screen
+          name="edit-emergency-contact"
+          options={{
+            title: "Edit Emergency Contact",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+
+        <Stack.Screen
+          name="setup-panic-button"
+          options={{
+            title: "Setup Panic Button",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+
+        <Stack.Screen
+          name="edit-panic-button"
+          options={{
+            title: "Edit Panic Button",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
       </Stack>
       {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />

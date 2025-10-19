@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import CustomAlert from "../components/CustomAlert";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -26,6 +27,32 @@ export default function ViewSos() {
     { latitude: number; longitude: number }[]
   >([]);
   const [duration, setDuration] = useState<number>(0);
+  const [showVolunteersModal, setShowVolunteersModal] = useState(false);
+  const [isVolunteered, setIsVolunteered] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    type: "error" | "success" | "warning" | "info";
+    title: string;
+    message: string;
+    onButtonPress?: () => void;
+  }>({
+    type: "success",
+    title: "",
+    message: "",
+    onButtonPress: undefined,
+  });
+
+  // Mock volunteers data
+  const volunteers = [
+    { id: 1, name: "John Doe", avatar: "J", time: "2 min ago" },
+    { id: 2, name: "Sarah Smith", avatar: "S", time: "5 min ago" },
+    { id: 3, name: "Mike Johnson", avatar: "M", time: "8 min ago" },
+    { id: 4, name: "Emma Wilson", avatar: "E", time: "10 min ago" },
+    { id: 5, name: "David Brown", avatar: "D", time: "12 min ago" },
+    { id: 6, name: "Lisa Anderson", avatar: "L", time: "13 min ago" },
+    { id: 7, name: "Tom Martinez", avatar: "T", time: "14 min ago" },
+    { id: 8, name: "Anna Taylor", avatar: "A", time: "15 min ago" },
+  ];
 
   // This data would come from navigation params or API
   const emergencyData = {
@@ -44,11 +71,68 @@ export default function ViewSos() {
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
     ],
     hasAudio: true,
+    status: "dispatched" as const,
+    timeReported: "15 minutes ago",
+    volunteersCount: 8,
+    reportedBy: "Jean Pierre",
   };
 
   useEffect(() => {
     getUserLocation();
   }, []);
+
+  const showAlert = (
+    type: "error" | "success" | "warning" | "info",
+    title: string,
+    message: string,
+    onButtonPress?: () => void
+  ) => {
+    setAlertConfig({ type, title, message, onButtonPress });
+    setAlertVisible(true);
+  };
+
+  const handleVolunteer = () => {
+    if (isVolunteered) {
+      showAlert(
+        "info",
+        "Already Volunteered",
+        "You have already volunteered for this emergency."
+      );
+    } else {
+      setIsVolunteered(true);
+      showAlert(
+        "success",
+        "Thank You!",
+        "You have successfully volunteered to help with this emergency. Stay safe and follow emergency protocols."
+      );
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "reported":
+        return "#f59e0b";
+      case "dispatched":
+        return "#3b82f6";
+      case "resolved":
+        return "#10b981";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "reported":
+        return "alert-circle";
+      case "dispatched":
+        return "car";
+      case "resolved":
+        return "checkmark-circle";
+      default:
+        return "alert-circle";
+    }
+  };
 
   const getUserLocation = async () => {
     try {
@@ -165,10 +249,31 @@ export default function ViewSos() {
           <FontAwesome5 name={emergencyData.icon} size={28} color="#ffffff" />
         </View>
 
+        {/* Emergency Type Title */}
+        <Text style={styles.emergencyTitle}>{emergencyData.type}</Text>
+
         {/* Location */}
         <View style={styles.locationContainer}>
           <Ionicons name="location-outline" size={16} color="#666666" />
           <Text style={styles.locationText}>{emergencyData.location}</Text>
+        </View>
+
+        {/* Status Badge */}
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: getStatusColor(emergencyData.status) },
+          ]}
+        >
+          <Ionicons
+            name={getStatusIcon(emergencyData.status) as any}
+            size={16}
+            color="#ffffff"
+          />
+          <Text style={styles.statusText}>
+            {emergencyData.status.charAt(0).toUpperCase() +
+              emergencyData.status.slice(1)}
+          </Text>
         </View>
 
         {/* Map Section */}
@@ -228,6 +333,42 @@ export default function ViewSos() {
                 ? `${distance.toFixed(1)} km away${duration > 0 ? ` • ~${Math.round(duration)} min Foot` : ""}`
                 : "Calculating route..."}
             </Text>
+          </View>
+        </View>
+
+        {/* Meta Information */}
+        <View style={styles.metaContainer}>
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={16} color="#999999" />
+              <Text style={styles.metaText}>{emergencyData.timeReported}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.metaItem}
+              onPress={() => setShowVolunteersModal(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="people-outline" size={16} color="#999999" />
+              <Text style={styles.metaText}>
+                {emergencyData.volunteersCount}{" "}
+                {emergencyData.volunteersCount === 1
+                  ? "volunteer"
+                  : "volunteers"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.reportedByContainer}>
+            <View style={styles.reporterAvatar}>
+              <Text style={styles.reporterInitial}>
+                {emergencyData.reportedBy.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.reporterInfo}>
+              <Text style={styles.reporterLabel}>Reported by</Text>
+              <Text style={styles.reporterName}>
+                {emergencyData.reportedBy}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -324,6 +465,27 @@ export default function ViewSos() {
         </View>
       </ScrollView>
 
+      {/* Volunteer Button */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.volunteerButton,
+            isVolunteered && styles.volunteerButtonDisabled,
+          ]}
+          activeOpacity={0.8}
+          onPress={handleVolunteer}
+        >
+          <Ionicons
+            name={isVolunteered ? "checkmark-circle" : "hand-right"}
+            size={24}
+            color="#ffffff"
+          />
+          <Text style={styles.volunteerButtonText}>
+            {isVolunteered ? "Already Volunteered" : "Volunteer to Help"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Image Modal */}
       <Modal
         visible={selectedImage !== null}
@@ -360,6 +522,67 @@ export default function ViewSos() {
           )}
         </TouchableOpacity>
       </Modal>
+
+      {/* Volunteers Modal */}
+      <Modal
+        visible={showVolunteersModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowVolunteersModal(false)}
+      >
+        <View style={styles.volunteersModalOverlay}>
+          <TouchableOpacity
+            style={styles.volunteersModalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowVolunteersModal(false)}
+          />
+          <View style={styles.volunteersModalContainer}>
+            <View style={styles.volunteersModalHandle} />
+            <View style={styles.volunteersModalHeader}>
+              <Text style={styles.volunteersModalTitle}>
+                Volunteers ({volunteers.length})
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowVolunteersModal(false)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              style={styles.volunteersModalScroll}
+              showsVerticalScrollIndicator={false}
+            >
+              {volunteers.map((volunteer) => (
+                <View key={volunteer.id} style={styles.volunteerItem}>
+                  <View style={styles.volunteerAvatar}>
+                    <Text style={styles.volunteerAvatarText}>
+                      {volunteer.avatar}
+                    </Text>
+                  </View>
+                  <View style={styles.volunteerInfo}>
+                    <Text style={styles.volunteerName}>{volunteer.name}</Text>
+                    <Text style={styles.volunteerTime}>
+                      Volunteered {volunteer.time}
+                    </Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertVisible(false)}
+        onButtonPress={alertConfig.onButtonPress}
+      />
     </View>
   );
 }
@@ -394,6 +617,87 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666666",
     fontWeight: "500",
+  },
+  emergencyTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#000000",
+    marginBottom: 8,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    marginBottom: 16,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#ffffff",
+    textTransform: "capitalize",
+  },
+  metaContainer: {
+    marginBottom: 24,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  metaText: {
+    fontSize: 13,
+    color: "#999999",
+    fontWeight: "500",
+  },
+  reportedByContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#f9fafb",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  reporterAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#e6491e",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reporterInitial: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  reporterInfo: {
+    flex: 1,
+  },
+  reporterLabel: {
+    fontSize: 11,
+    color: "#9ca3af",
+    fontWeight: "500",
+    marginBottom: 2,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  reporterName: {
+    fontSize: 14,
+    color: "#1f2937",
+    fontWeight: "600",
   },
   mapSection: {
     marginBottom: 24,
@@ -567,7 +871,125 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   modalImage: {
-    width: SCREEN_WIDTH - 40,
-    height: "80%",
+    width: SCREEN_WIDTH,
+    height: "100%",
+  },
+  volunteersModalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  volunteersModalBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  volunteersModalContainer: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "70%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  volunteersModalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#cccccc",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  volunteersModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  volunteersModalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000000",
+  },
+  volunteersModalScroll: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  volunteerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  volunteerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#e6491e",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  volunteerAvatarText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  volunteerInfo: {
+    flex: 1,
+  },
+  volunteerName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000000",
+    marginBottom: 2,
+  },
+  volunteerTime: {
+    fontSize: 13,
+    color: "#999999",
+  },
+  footer: {
+    padding: 20,
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  volunteerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#e6491e",
+    paddingVertical: 16,
+    borderRadius: 12,
+    shadowColor: "#e6491e",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  volunteerButtonDisabled: {
+    backgroundColor: "#10b981",
+  },
+  volunteerButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ffffff",
   },
 });
