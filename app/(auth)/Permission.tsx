@@ -69,7 +69,7 @@ export default function PermissionScreen() {
   };
 
   const handleNavigate = () => {
-    router.push("/");
+    router.replace("/(tabs)");
   };
 
   return (
