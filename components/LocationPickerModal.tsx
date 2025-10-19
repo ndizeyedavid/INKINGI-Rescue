@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import * as Location from "expo-location";
+import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Modal,
   PanResponder,
@@ -11,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 
 interface ILocationPickerModal {
   visible: boolean;
@@ -27,9 +30,124 @@ export default function LocationPickerModal({
   onSelectLocation,
   currentLocation,
 }: ILocationPickerModal) {
+  const mapRef = useRef<MapView>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
   const [translateY] = useState(new Animated.Value(0));
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  const [region, setRegion] = useState<Region>({
+    latitude: -1.9441,
+    longitude: 30.0619,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+  const [markerCoordinate, setMarkerCoordinate] = useState({
+    latitude: -1.9441,
+    longitude: 30.0619,
+  });
+
+  useEffect(() => {
+    if (visible) {
+      getUserLocation();
+    }
+  }, [visible]);
+
+  const getUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is required to show your position."
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setUserLocation(location);
+      
+      const newRegion = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      
+      setRegion(newRegion);
+      setMarkerCoordinate({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      
+      // Get address from coordinates
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      
+      if (address[0]) {
+        const addr = address[0];
+        const parts = [
+          addr.name,
+          addr.street,
+          addr.streetNumber,
+          addr.district,
+          addr.subregion,
+          addr.city,
+          addr.region,
+          addr.postalCode,
+        ].filter(Boolean);
+        
+        const formattedAddress = parts.length > 0 
+          ? parts.slice(0, 3).join(", ") 
+          : `${location.coords.latitude.toFixed(6)}, ${location.coords.longitude.toFixed(6)}`;
+        
+        setSelectedLocation(formattedAddress);
+      }
+      
+      mapRef.current?.animateToRegion(newRegion, 1000);
+    } catch (error) {
+      console.error("Location error:", error);
+    }
+  };
+
+  const handleMapPress = async (event: any) => {
+    const coordinate = event.nativeEvent.coordinate;
+    setMarkerCoordinate(coordinate);
+    
+    try {
+      const address = await Location.reverseGeocodeAsync({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+      });
+      
+      if (address[0]) {
+        const addr = address[0];
+        const parts = [
+          addr.name,
+          addr.street,
+          addr.streetNumber,
+          addr.district,
+          addr.subregion,
+          addr.city,
+          addr.region,
+          addr.postalCode,
+        ].filter(Boolean);
+        
+        const formattedAddress = parts.length > 0 
+          ? parts.slice(0, 3).join(", ") 
+          : `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`;
+        
+        setSelectedLocation(formattedAddress);
+      }
+    } catch (error) {
+      console.error("Reverse geocode error:", error);
+      // Fallback to coordinates if reverse geocoding fails
+      setSelectedLocation(`${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+    }
+  };
 
   const filteredLocations = LOCATIONS.filter((location) =>
     location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -111,20 +229,32 @@ export default function LocationPickerModal({
             />
           </View>
 
-          {/* Map Placeholder */}
+          {/* Map */}
           <View style={styles.mapContainer}>
-            <View style={styles.mapPlaceholder}>
-              <View style={styles.youAreHere}>
-                <Text style={styles.youAreHereText}>You are here</Text>
-              </View>
-              <Ionicons
-                name="location"
-                size={40}
-                color="#e6491e"
-                style={styles.mapMarker}
-              />
-            </View>
-            <TouchableOpacity style={styles.trackLocationButton}>
+            <MapView
+              ref={mapRef}
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              initialRegion={region}
+              onPress={handleMapPress}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+            >
+              <Marker
+                coordinate={markerCoordinate}
+                draggable
+                onDragEnd={handleMapPress}
+              >
+                <View style={styles.customMarker}>
+                  <Ionicons name="location" size={40} color="#e6491e" />
+                </View>
+              </Marker>
+            </MapView>
+            <TouchableOpacity 
+              style={styles.trackLocationButton}
+              onPress={getUserLocation}
+              activeOpacity={0.8}
+            >
               <Ionicons name="navigate" size={16} color="#e6491e" />
               <Text style={styles.trackLocationText}>Track my location</Text>
             </TouchableOpacity>
@@ -236,31 +366,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 16,
     position: "relative",
-  },
-  mapPlaceholder: {
-    height: 150,
-    backgroundColor: "#e8f4f8",
+    height: 200,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
     overflow: "hidden",
   },
-  youAreHere: {
-    backgroundColor: "#000000",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    position: "absolute",
-    top: 20,
+  map: {
+    flex: 1,
   },
-  youAreHereText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  mapMarker: {
-    marginTop: 20,
+  customMarker: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   trackLocationButton: {
     position: "absolute",

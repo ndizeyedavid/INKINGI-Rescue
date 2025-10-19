@@ -1,8 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
+import MapView, {
+  Callout,
+  Marker,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
 
 interface EmergencyReport {
   id: number;
@@ -15,8 +21,11 @@ interface EmergencyReport {
 }
 
 export default function MapTab() {
+  const router = useRouter();
   const mapRef = useRef<MapView>(null);
-  const locationSubscription = useRef<Location.LocationSubscription | null>(null);
+  const locationSubscription = useRef<Location.LocationSubscription | null>(
+    null
+  );
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
@@ -78,14 +87,21 @@ export default function MapTab() {
         return;
       }
 
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-      setRegion({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
       });
+      setLocation(currentLocation);
+
+      // Center map on user location
+      mapRef.current?.animateToRegion(
+        {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        },
+        1000
+      );
     })();
 
     // Cleanup function
@@ -99,7 +115,9 @@ export default function MapTab() {
 
   const centerOnUser = async () => {
     try {
-      const currentLocation = await Location.getCurrentPositionAsync({});
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       setLocation(currentLocation);
 
       const newRegion = {
@@ -118,6 +136,7 @@ export default function MapTab() {
   const toggleTracking = async () => {
     if (!isTracking) {
       setIsTracking(true);
+      isTrackingRef.current = true;
       await centerOnUser();
 
       // Start watching position
@@ -129,20 +148,24 @@ export default function MapTab() {
         },
         (newLocation) => {
           setLocation(newLocation);
-          mapRef.current?.animateToRegion(
-            {
-              latitude: newLocation.coords.latitude,
-              longitude: newLocation.coords.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            },
-            500
-          );
+          // Only animate if still tracking
+          if (isTrackingRef.current) {
+            mapRef.current?.animateToRegion(
+              {
+                latitude: newLocation.coords.latitude,
+                longitude: newLocation.coords.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              },
+              500
+            );
+          }
         }
       );
       locationSubscription.current = subscription;
     } else {
       setIsTracking(false);
+      isTrackingRef.current = false;
       // Stop watching position
       if (locationSubscription.current) {
         locationSubscription.current.remove();
@@ -195,8 +218,7 @@ export default function MapTab() {
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        region={region}
-        onRegionChangeComplete={setRegion}
+        initialRegion={region}
         showsUserLocation={true}
         showsMyLocationButton={false}
         showsCompass={true}
@@ -226,8 +248,6 @@ export default function MapTab() {
               latitude: emergency.latitude,
               longitude: emergency.longitude,
             }}
-            title={emergency.title}
-            description={`${emergency.description} • ${emergency.timestamp}`}
           >
             <View
               style={[
@@ -241,6 +261,41 @@ export default function MapTab() {
                 color="#ffffff"
               />
             </View>
+            <Callout tooltip onPress={() => router.push("/view-sos")}>
+              <View style={styles.calloutContainer}>
+                <View style={styles.calloutHeader}>
+                  <View
+                    style={[
+                      styles.calloutIcon,
+                      { backgroundColor: getMarkerColor(emergency.type) },
+                    ]}
+                  >
+                    <Ionicons
+                      name={getMarkerIcon(emergency.type) as any}
+                      size={16}
+                      color="#ffffff"
+                    />
+                  </View>
+                  <View style={styles.calloutHeaderText}>
+                    <Text style={styles.calloutTitle}>{emergency.title}</Text>
+                    <Text style={styles.calloutTimestamp}>
+                      {emergency.timestamp}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.calloutDescription} numberOfLines={2}>
+                  {emergency.description}
+                </Text>
+                <TouchableOpacity
+                  style={styles.viewDetailsButton}
+                  onPress={() => router.push("/view-sos")}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.viewDetailsText}>View Details</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+                </TouchableOpacity>
+              </View>
+            </Callout>
           </Marker>
         ))}
       </MapView>
@@ -258,10 +313,7 @@ export default function MapTab() {
 
         {/* Track Location Button */}
         <TouchableOpacity
-          style={[
-            styles.trackButton,
-            isTracking && styles.trackButtonActive,
-          ]}
+          style={[styles.trackButton, isTracking && styles.trackButtonActive]}
           onPress={toggleTracking}
           activeOpacity={0.8}
         >
@@ -282,7 +334,7 @@ export default function MapTab() {
       </View>
 
       {/* Legend */}
-      <View style={styles.legend}>
+      {/* <View style={styles.legend}>
         <Text style={styles.legendTitle}>Emergency Types</Text>
         <View style={styles.legendItems}>
           <View style={styles.legendItem}>
@@ -302,7 +354,7 @@ export default function MapTab() {
             <Text style={styles.legendText}>Robbery</Text>
           </View>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -316,6 +368,9 @@ const styles = StyleSheet.create({
   },
   controls: {
     position: "absolute",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
     bottom: 120,
     right: 20,
     gap: 12,
@@ -407,7 +462,7 @@ const styles = StyleSheet.create({
   },
   legend: {
     position: "absolute",
-    top: 20,
+    top: 50,
     left: 20,
     backgroundColor: "#ffffff",
     borderRadius: 12,
@@ -444,5 +499,65 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666666",
   },
+  calloutContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 16,
+    width: 280,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  calloutHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 12,
+  },
+  calloutIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calloutHeaderText: {
+    flex: 1,
+  },
+  calloutTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000000",
+    marginBottom: 2,
+  },
+  calloutTimestamp: {
+    fontSize: 12,
+    color: "#999999",
+  },
+  calloutDescription: {
+    fontSize: 14,
+    color: "#666666",
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  viewDetailsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#e6491e",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  viewDetailsText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
 });
-

@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function AppLayout() {
   const router = useRouter();
@@ -34,6 +34,28 @@ export default function AppLayout() {
             <MaterialIcons name="error-outline" size={size} color={color} />
           ),
           tabBarBadge: "2",
+        }}
+      />
+
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: "Map",
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={[
+                styles.centralButton,
+                !focused && styles.centralButtonInactive,
+              ]}
+            >
+              <MaterialIcons
+                name="map"
+                size={28}
+                color={focused ? "#ffffff" : "#ffffff"}
+              />
+            </View>
+          ),
+          tabBarLabel: () => null,
         }}
       />
 
@@ -88,5 +110,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     marginTop: 4,
+  },
+  centralButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#e6491e",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#e6491e",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  centralButtonInactive: {
+    backgroundColor: "#e6491e",
+    opacity: 0.9,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
   },
 });

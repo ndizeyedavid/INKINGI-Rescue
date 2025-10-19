@@ -1,6 +1,8 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import * as Location from "expo-location";
+import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Dimensions,
   Image,
   Modal,
@@ -10,17 +12,30 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ViewSos() {
+  const mapRef = useRef<MapView>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [userLocation, setUserLocation] =
+    useState<Location.LocationObject | null>(null);
+  const [distance, setDistance] = useState<number>(0);
+  const [routeCoordinates, setRouteCoordinates] = useState<
+    { latitude: number; longitude: number }[]
+  >([]);
+  const [duration, setDuration] = useState<number>(0);
 
   // This data would come from navigation params or API
   const emergencyData = {
     type: "Road Accident",
     icon: "car-crash",
     location: "Nyamkombo Kk 291",
+    coordinates: {
+      latitude: -2.2076556621901284,
+      longitude: 30.15177516593474,
+    },
     description:
       "The incident involved the vehicle RAH 331, which was involved in a collision between a car and a motorcycle. The accident resulted in a serious head injury for the biker. Urgent emergency services are needed at this location.",
     images: [
@@ -29,6 +44,113 @@ export default function ViewSos() {
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
     ],
     hasAudio: true,
+  };
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  const getUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is required to show distance."
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setUserLocation(location);
+
+      // Get route from GraphHopper
+      await getRoute(
+        location.coords.latitude,
+        location.coords.longitude,
+        emergencyData.coordinates.latitude,
+        emergencyData.coordinates.longitude
+      );
+    } catch (error) {
+      console.error("Location error:", error);
+    }
+  };
+
+  const getRoute = async (
+    startLat: number,
+    startLon: number,
+    endLat: number,
+    endLon: number
+  ) => {
+    try {
+      // GraphHopper API endpoint
+      const apiKey = "629e52a9-2355-4711-99ca-119d3e430a89"; // Replace with your API key
+      const url = `https://graphhopper.com/api/1/route?point=${startLat},${startLon}&point=${endLat},${endLon}&vehicle=foot&locale=en&key=${apiKey}&points_encoded=false&instructions=true`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.paths && data.paths.length > 0) {
+        const path = data.paths[0];
+
+        // Extract coordinates from the route
+        const coordinates = path.points.coordinates.map(
+          (coord: [number, number]) => ({
+            latitude: coord[1],
+            longitude: coord[0],
+          })
+        );
+
+        setRouteCoordinates(coordinates);
+
+        // Set distance in kilometers
+        setDistance(path.distance / 1000);
+
+        // Set duration in minutes
+        setDuration(path.time / 60000);
+
+        // Fit map to show the entire route
+        if (mapRef.current && coordinates.length > 0) {
+          mapRef.current.fitToCoordinates(coordinates, {
+            edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
+            animated: true,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Route error:", error);
+      // Fallback to straight line if routing fails
+      setRouteCoordinates([
+        { latitude: startLat, longitude: startLon },
+        { latitude: endLat, longitude: endLon },
+      ]);
+
+      // Calculate straight-line distance as fallback
+      const dist = calculateDistance(startLat, startLon, endLat, endLon);
+      setDistance(dist);
+    }
+  };
+
+  // Calculate distance using Haversine formula (fallback)
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
   return (
@@ -52,30 +174,60 @@ export default function ViewSos() {
         {/* Map Section */}
         <View style={styles.mapSection}>
           <View style={styles.mapContainer}>
-            {/* Alert Location Marker */}
-            <View style={styles.alertMarker}>
-              <Ionicons name="location" size={32} color="#e6491e" />
-              <View style={styles.alertLabel}>
-                <Text style={styles.alertLabelText}>Alert Location</Text>
-              </View>
-            </View>
+            <MapView
+              ref={mapRef}
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              initialRegion={{
+                latitude: emergencyData.coordinates.latitude,
+                longitude: emergencyData.coordinates.longitude,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+              }}
+              showsUserLocation={true}
+            >
+              {/* Emergency Location Marker */}
+              <Marker coordinate={emergencyData.coordinates}>
+                <View style={styles.alertMarkerContainer}>
+                  <Ionicons name="location" size={40} color="#e6491e" />
+                </View>
+              </Marker>
 
-            {/* User Current Location Marker */}
-            <View style={styles.userMarker}>
-              <View style={styles.userDot} />
-              <View style={styles.userLabel}>
-                <Text style={styles.userLabelText}>You are here</Text>
-              </View>
-            </View>
+              {/* User Location Marker */}
+              {userLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: userLocation.coords.latitude,
+                    longitude: userLocation.coords.longitude,
+                  }}
+                >
+                  <View style={styles.userMarkerContainer}>
+                    <View style={styles.userDot} />
+                  </View>
+                </Marker>
+              )}
 
-            {/* Distance Line */}
-            <View style={styles.distanceLine} />
+              {/* Route line */}
+              {routeCoordinates.length > 0 && (
+                <Polyline
+                  coordinates={routeCoordinates}
+                  strokeColor="#4285F4"
+                  strokeWidth={4}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              )}
+            </MapView>
           </View>
 
           {/* Distance Info */}
           <View style={styles.distanceInfo}>
             <Ionicons name="navigate" size={16} color="#666666" />
-            <Text style={styles.distanceText}>2.3 km away from you</Text>
+            <Text style={styles.distanceText}>
+              {distance > 0
+                ? `${distance.toFixed(1)} km away${duration > 0 ? ` • ~${Math.round(duration)} min Foot` : ""}`
+                : "Calculating route..."}
+            </Text>
           </View>
         </View>
 
@@ -248,48 +400,25 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: 200,
-    backgroundColor: "#e8f4f8",
     borderRadius: 12,
-    position: "relative",
     overflow: "hidden",
     marginBottom: 12,
   },
-  alertMarker: {
-    position: "absolute",
-    top: 40,
-    right: 60,
+  map: {
+    flex: 1,
+  },
+  alertMarkerContainer: {
     alignItems: "center",
+    justifyContent: "center",
   },
-  alertLabel: {
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginTop: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  alertLabelText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#e6491e",
-  },
-  userMarker: {
-    position: "absolute",
-    bottom: 50,
-    left: 50,
+  userMarkerContainer: {
     alignItems: "center",
+    justifyContent: "center",
   },
   userDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: "#4285F4",
     borderWidth: 3,
     borderColor: "#ffffff",
@@ -298,31 +427,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 3,
-  },
-  userLabel: {
-    backgroundColor: "#000000",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-  userLabelText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  distanceLine: {
-    position: "absolute",
-    top: 70,
-    left: 65,
-    right: 90,
-    height: 2,
-    backgroundColor: "#666666",
-    opacity: 0.3,
-    transform: [{ rotate: "20deg" }],
+    elevation: 5,
   },
   distanceInfo: {
     flexDirection: "row",
