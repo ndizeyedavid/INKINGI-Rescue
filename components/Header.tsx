@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Header() {
+  const router = useRouter();
+
   return (
     <View style={styles.headerContainer}>
       <View className="ml-4">
@@ -9,10 +12,14 @@ export default function Header() {
         <Text style={styles.headerText}>MELLOW JUNIOR</Text>
       </View>
 
-      <View style={styles.notificationContainer}>
+      <TouchableOpacity
+        style={styles.notificationContainer}
+        activeOpacity={0.7}
+        onPress={() => router.push("/notifications")}
+      >
         <Ionicons name="notifications-outline" size={27} color="black" />
         <View style={styles.notificationBadge} />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }

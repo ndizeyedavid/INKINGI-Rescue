@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ICommunityPostCard {
@@ -18,8 +19,14 @@ export default function CommunityPostCard({
   imageUrl,
   onMenuPress,
 }: ICommunityPostCard) {
+  const router = useRouter();
+
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.95}
+      onPress={() => router.push("/post-detail")}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.authorInfo}>
@@ -28,7 +35,10 @@ export default function CommunityPostCard({
         </View>
         {onMenuPress && (
           <TouchableOpacity
-            onPress={onMenuPress}
+            onPress={(e) => {
+              e.stopPropagation();
+              onMenuPress();
+            }}
             style={styles.menuButton}
             activeOpacity={0.7}
           >
@@ -49,7 +59,7 @@ export default function CommunityPostCard({
         <Text style={styles.titleText}>{title}</Text>
         <Text style={styles.contentText}>{content}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
