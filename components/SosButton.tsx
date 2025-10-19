@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
@@ -10,6 +11,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function SosButton() {
+  const router = useRouter();
   const outerScale = useSharedValue(1);
   const middleScale = useSharedValue(1);
   const innerScale = useSharedValue(1);
@@ -62,7 +64,11 @@ export default function SosButton() {
       <Animated.View style={[styles.sosOuterRing, outerRingStyle]} />
       <Animated.View style={[styles.sosMiddleRing, middleRingStyle]} />
       <Animated.View style={[styles.sosInnerRing, innerRingStyle]} />
-      <TouchableOpacity activeOpacity={0.8} style={styles.sosButton}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => router.push("/report-emergency")}
+        style={styles.sosButton}
+      >
         <Text style={styles.sosButtonText}>SOS</Text>
       </TouchableOpacity>
     </View>

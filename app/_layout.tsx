@@ -277,6 +277,30 @@ export default function RootLayout() {
             ),
           }}
         />
+        <Stack.Screen
+          name="report-emergency"
+          options={{
+            title: "Report Emergency",
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleStyle: {
+              fontSize: 18,
+              fontWeight: "700",
+            },
+            headerTintColor: "#000000",
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 16 }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#000000" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
       </Stack>
       {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />
