@@ -71,6 +71,7 @@ export default function SosPage() {
               description="The incident involved the vehicle RAH 331, which was involved in a collision between a car and a motorcycle. The accident resulted in a serious head injury for the biker. Urgent emergency services are needed at this location."
               isMine={true}
               onDelete={() => console.log("Delete emergency")}
+              status="reported"
             />
           </TouchableOpacity>
         ) : (
@@ -81,6 +82,7 @@ export default function SosPage() {
               type="Medical Emergency"
               description="I am having a stork please send help asap."
               onDelete={() => console.log("Delete emergency")}
+              reportedBy="mellow"
             />
             <EmergencyCard
               location="Kimisagara, KK 301"
@@ -88,6 +90,7 @@ export default function SosPage() {
               type="Fire Emergency"
               description="later butter owner easy expect barn market fireplace person important interior food public factory feet southern green complete may sight loose situation shelf supperI am having a stork please send help asap."
               onDelete={() => console.log("Delete emergency")}
+              reportedBy="Jean Pierre"
             />
           </View>
         )}
@@ -141,6 +144,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    marginBottom: 60,
   },
   emptyState: {
     alignItems: "center",

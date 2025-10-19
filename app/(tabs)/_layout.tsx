@@ -57,6 +57,12 @@ export default function AppLayout() {
           ),
           tabBarLabel: () => null,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.push("/emergencies-map");
+          },
+        }}
       />
 
       <Tabs.Screen
@@ -130,7 +136,7 @@ const styles = StyleSheet.create({
   },
   centralButtonInactive: {
     backgroundColor: "#e6491e",
-    opacity: 0.9,
+    opacity: 1,
     shadowColor: "#000",
     shadowOpacity: 0.15,
   },
