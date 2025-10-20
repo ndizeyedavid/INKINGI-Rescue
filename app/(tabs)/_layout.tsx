@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Tabs, useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
@@ -24,6 +25,11 @@ export default function AppLayout() {
             <MaterialIcons name="home" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
+        }}
       />
 
       <Tabs.Screen
@@ -34,6 +40,11 @@ export default function AppLayout() {
             <MaterialIcons name="error-outline" size={size} color={color} />
           ),
           tabBarBadge: "2",
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
         }}
       />
 
@@ -60,6 +71,7 @@ export default function AppLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
             router.push("/emergencies-map");
           },
         }}
@@ -73,6 +85,11 @@ export default function AppLayout() {
             <MaterialIcons name="people-outline" size={size} color={color} />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
+        }}
       />
       <Tabs.Screen
         name="profile"
@@ -81,6 +98,11 @@ export default function AppLayout() {
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="person-outline" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
     </Tabs>

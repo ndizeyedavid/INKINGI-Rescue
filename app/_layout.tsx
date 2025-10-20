@@ -15,7 +15,7 @@ function StackNavigator() {
   // Handle shake detection
   const handleShake = useCallback(() => {
     console.log("Shake detected! Opening emergency report...");
-    router.push("/report-emergency");
+    router.push("/alert-loud");
   }, [router]);
 
   // Enable shake detection

@@ -59,6 +59,7 @@
           "cameraPermission": "Allow INKINGI Rescue to access your camera to take photos during emergency reports."
         }
       ],
+      "expo-brightness",
       [
         "expo-splash-screen",
         {

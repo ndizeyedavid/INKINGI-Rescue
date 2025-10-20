@@ -3,6 +3,7 @@ import { useNotification } from "@/context/NotificationContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { Camera } from "expo-camera";
+import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
@@ -96,6 +97,11 @@ export default function Settings() {
         "Failed to send emergency notification. Please check your notification permissions."
       );
     }
+  };
+
+  const handleTestBroadcast = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    router.push("/emergency-broadcast");
   };
 
   // Check all permissions on mount
@@ -525,6 +531,27 @@ export default function Settings() {
                 </View>
               </View>
               <Ionicons name="send" size={20} color="#e6491e" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.settingItem}
+              activeOpacity={0.7}
+              onPress={handleTestBroadcast}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.settingIcon}>
+                  <Ionicons name="megaphone" size={20} color="#DC2626" />
+                </View>
+                <View style={styles.settingInfo}>
+                  <Text style={styles.settingTitle}>
+                    Test Government Broadcast
+                  </Text>
+                  <Text style={styles.settingDescription}>
+                    Simulate emergency broadcast
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="send" size={20} color="#DC2626" />
             </TouchableOpacity>
           </View>
         </View>
