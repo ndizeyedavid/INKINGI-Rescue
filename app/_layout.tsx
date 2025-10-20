@@ -1,7 +1,8 @@
+import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar, TouchableOpacity } from "react-native";
-import { AuthProvider } from "../context/AuthContext";
 
 // Keep the splash screen visible while we fetch resources
 // SplashScreen.preventAutoHideAsync();
@@ -11,7 +12,8 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }}>
+      <NotificationProvider>
+        <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen
           name="new-post"
@@ -411,6 +413,7 @@ export default function RootLayout() {
       </Stack>
       {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

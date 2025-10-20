@@ -9,9 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useNotification } from "@/context/NotificationContext";
+import CustomAlert from "@/components/CustomAlert";
 
 export default function Settings() {
   const router = useRouter();
+  const { sendNotification, sendEmergencyNotification } = useNotification();
+  
   // Permissions
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(true);
@@ -23,6 +27,69 @@ export default function Settings() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [autoShareLocation, setAutoShareLocation] = useState(true);
+
+  // Alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    type: "error" | "success" | "warning" | "info";
+    title: string;
+    message: string;
+  }>({
+    type: "success",
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (
+    type: "error" | "success" | "warning" | "info",
+    title: string,
+    message: string
+  ) => {
+    setAlertConfig({ type, title, message });
+    setAlertVisible(true);
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      await sendNotification(
+        "🔔 Test Notification",
+        "Your notifications are working perfectly! You'll receive alerts for emergencies near you.",
+        { screen: "/settings", test: true }
+      );
+      showAlert(
+        "success",
+        "Notification Sent!",
+        "Check your notification tray to see the test notification."
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to send notification. Please check your notification permissions."
+      );
+    }
+  };
+
+  const handleTestEmergencyNotification = async () => {
+    try {
+      await sendEmergencyNotification(
+        "🚨 Emergency Alert Test",
+        "This is a high-priority emergency notification test. In a real emergency, you would receive critical updates like this.",
+        { screen: "/view-sos", test: true }
+      );
+      showAlert(
+        "success",
+        "Emergency Alert Sent!",
+        "Check your notification tray for the high-priority emergency notification."
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to send emergency notification. Please check your notification permissions."
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -191,6 +258,54 @@ export default function Settings() {
           </View>
         </View>
 
+        {/* Developer Tools Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Developer Tools</Text>
+          <Text style={styles.sectionSubtitle}>
+            Test notification functionality
+          </Text>
+
+          <View style={styles.settingsList}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              activeOpacity={0.7}
+              onPress={handleTestNotification}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.settingIcon}>
+                  <Ionicons name="notifications-outline" size={20} color="#e6491e" />
+                </View>
+                <View style={styles.settingInfo}>
+                  <Text style={styles.settingTitle}>Test Notification</Text>
+                  <Text style={styles.settingDescription}>
+                    Send a test notification
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="send" size={20} color="#e6491e" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.settingItem}
+              activeOpacity={0.7}
+              onPress={handleTestEmergencyNotification}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.settingIcon}>
+                  <Ionicons name="alert-circle" size={20} color="#e6491e" />
+                </View>
+                <View style={styles.settingInfo}>
+                  <Text style={styles.settingTitle}>Test Emergency Alert</Text>
+                  <Text style={styles.settingDescription}>
+                    Send high-priority alert
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="send" size={20} color="#e6491e" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Other Settings Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Other</Text>
@@ -258,6 +373,15 @@ export default function Settings() {
           <Text style={styles.versionText}>Version 1.0 Alpha</Text>
         </View>
       </ScrollView>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 }
