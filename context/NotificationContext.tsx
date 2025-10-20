@@ -36,8 +36,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] =
     useState<Notifications.Notification | null>(null);
-  const notificationListener = useRef<Notifications.Subscription | undefined>();
-  const responseListener = useRef<Notifications.Subscription | undefined>();
+  const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
+  const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
 
   useEffect(() => {
     // Register for push notifications

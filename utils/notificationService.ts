@@ -48,9 +48,8 @@ class NotificationService {
         return null;
       }
 
-      const token = await Notifications.getExpoPushTokenAsync({
-        projectId: "your-project-id", // Replace with your Expo project ID
-      });
+      // Get push token without projectId for Expo Go
+      const token = await Notifications.getExpoPushTokenAsync();
 
       this.expoPushToken = token.data;
 
