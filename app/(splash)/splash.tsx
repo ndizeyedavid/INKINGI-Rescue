@@ -1,6 +1,7 @@
 import "@/global.css";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,8 +39,8 @@ export default function Splash() {
       setTimeout(() => {
         if (hasSeenOnboarding === "true") {
           // User has seen onboarding, go to sign-in
-          router.replace("/(tabs)");
-          // router.replace("/onboarding");
+          // router.replace("/(tabs)");
+          router.replace("/onboarding");
         } else {
           // First time user, show onboarding
           router.replace("/onboarding");
@@ -72,12 +73,21 @@ export default function Splash() {
           />
           <Text style={styles.title}>INKINGI</Text>
           <Text style={styles.subtitle}>Rescue</Text>
+
+          {/* Lottie Animation */}
+          <LottieView
+            source={require("@/assets/animations/splash.json")}
+            autoPlay
+            loop
+            style={styles.lottieContainer}
+          />
         </Animated.View>
 
         <Animated.View style={[styles.taglineContainer, { opacity: fadeAnim }]}>
           <Text style={styles.tagline}>
             Emergency Response at Your Fingertips
           </Text>
+          <Text style={styles.version}>Version 1.0 alpha</Text>
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -98,6 +108,11 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: "center",
   },
+  lottieContainer: {
+    width: 60,
+    height: 60,
+    marginTop: 20,
+  },
   logo: {
     width: 144,
     height: 144,
@@ -116,11 +131,17 @@ const styles = StyleSheet.create({
   },
   taglineContainer: {
     position: "absolute",
-    bottom: 60,
+    bottom: 10,
     alignItems: "center",
+    gap: 10,
   },
   tagline: {
     fontSize: 14,
+    color: "#666666",
+    fontWeight: "500",
+  },
+  version: {
+    fontSize: 12,
     color: "#666666",
     fontWeight: "500",
   },

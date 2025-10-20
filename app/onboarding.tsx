@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import { useRef, useState } from "react";
 import {
   Dimensions,
@@ -20,7 +21,9 @@ interface OnboardingSlide {
   id: string;
   title: string;
   description: string;
-  image: any;
+  animation?: any;
+  gif?: any;
+  type: "lottie" | "gif";
 }
 
 const slides: OnboardingSlide[] = [
@@ -29,28 +32,33 @@ const slides: OnboardingSlide[] = [
     title: "Report Emergencies Instantly",
     description:
       "Quickly report accidents, fires, medical emergencies, and more with just a few taps. Your safety is our priority.",
-    image: require("@/assets/images/logo.png"),
+    animation: require("@/assets/animations/firefighters.json"),
+    type: "lottie",
   },
   {
     id: "2",
     title: "Real-Time Emergency Tracking",
     description:
       "Track emergency responses in real-time. See who's helping, get updates, and stay informed throughout the process.",
-    image: require("@/assets/images/logo.png"),
+    // gif: require("@/assets/animations/tracking.gif"),
+    animation: require("@/assets/animations/asd.json"),
+    type: "lottie",
   },
   {
     id: "3",
     title: "Community Support Network",
     description:
       "Join a community of volunteers ready to help. Volunteer for emergencies near you and make a difference in your community.",
-    image: require("@/assets/images/logo.png"),
+    gif: require("@/assets/animations/community.gif"),
+    type: "gif",
   },
   {
     id: "4",
     title: "Panic Buttons & Quick Access",
     description:
       "Configure custom panic buttons for instant alerts. Access emergency hotlines and your emergency contacts with one tap.",
-    image: require("@/assets/images/logo.png"),
+    animation: require("@/assets/animations/splash.json"),
+    type: "lottie",
   },
 ];
 
@@ -100,7 +108,16 @@ export default function Onboarding() {
     <View style={styles.slide}>
       <View style={styles.imageContainer}>
         <View style={styles.imageCircle}>
-          <Image source={item.image} style={styles.image} />
+          {item.type === "lottie" ? (
+            <LottieView
+              source={item.animation}
+              autoPlay
+              loop
+              style={styles.lottie}
+            />
+          ) : (
+            <Image source={item.gif} style={styles.gif} resizeMode="contain" />
+          )}
         </View>
       </View>
       <View style={styles.textContainer}>
@@ -206,10 +223,13 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#e6491e",
   },
-  image: {
-    width: 180,
-    height: 180,
-    resizeMode: "contain",
+  lottie: {
+    width: 240,
+    height: 240,
+  },
+  gif: {
+    width: 215,
+    height: 215,
   },
   textContainer: {
     paddingHorizontal: 20,
