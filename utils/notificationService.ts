@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
@@ -8,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -48,8 +51,14 @@ class NotificationService {
         return null;
       }
 
-      // Get push token without projectId for Expo Go
-      const token = await Notifications.getExpoPushTokenAsync();
+      // Get projectId from app config (recommended by Expo docs)
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
+
+      const token = await Notifications.getExpoPushTokenAsync({
+        projectId,
+      });
 
       this.expoPushToken = token.data;
 
@@ -85,23 +94,33 @@ class NotificationService {
     notification: NotificationData,
     trigger?: Notifications.NotificationTriggerInput
   ): Promise<string> {
+    const content: Notifications.NotificationContentInput = {
+      title: notification.title,
+      body: notification.body,
+      data: notification.data || {},
+      sound: notification.sound !== false,
+      priority:
+        notification.priority === "max"
+          ? Notifications.AndroidNotificationPriority.MAX
+          : notification.priority === "high"
+            ? Notifications.AndroidNotificationPriority.HIGH
+            : notification.priority === "low"
+              ? Notifications.AndroidNotificationPriority.LOW
+              : Notifications.AndroidNotificationPriority.DEFAULT,
+    };
+
+    // Only add badge if it's explicitly set
+    if (notification.badge !== undefined && notification.badge !== null) {
+      content.badge = notification.badge;
+    }
+
+    // Only add categoryIdentifier if it's set
+    if (notification.categoryIdentifier) {
+      content.categoryIdentifier = notification.categoryIdentifier;
+    }
+
     const notificationId = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: notification.title,
-        body: notification.body,
-        data: notification.data || {},
-        sound: notification.sound !== false,
-        badge: notification.badge,
-        priority:
-          notification.priority === "max"
-            ? Notifications.AndroidNotificationPriority.MAX
-            : notification.priority === "high"
-              ? Notifications.AndroidNotificationPriority.HIGH
-              : notification.priority === "low"
-                ? Notifications.AndroidNotificationPriority.LOW
-                : Notifications.AndroidNotificationPriority.DEFAULT,
-        categoryIdentifier: notification.categoryIdentifier,
-      },
+      content,
       trigger: trigger || null, // null means immediate
     });
 
@@ -141,6 +160,7 @@ class NotificationService {
     date: Date
   ): Promise<string> {
     return this.scheduleNotification(notification, {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
       date,
     });
   }
@@ -153,6 +173,7 @@ class NotificationService {
     seconds: number
   ): Promise<string> {
     return this.scheduleNotification(notification, {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds,
       repeats: true,
     });

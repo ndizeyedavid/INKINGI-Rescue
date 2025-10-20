@@ -1,7 +1,14 @@
+import CustomAlert from "@/components/CustomAlert";
+import { useNotification } from "@/context/NotificationContext";
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
+import { Camera } from "expo-camera";
+import * as Location from "expo-location";
+import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -9,18 +16,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNotification } from "@/context/NotificationContext";
-import CustomAlert from "@/components/CustomAlert";
 
 export default function Settings() {
   const router = useRouter();
   const { sendNotification, sendEmergencyNotification } = useNotification();
-  
+
   // Permissions
-  const [locationEnabled, setLocationEnabled] = useState(true);
-  const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [isCheckingPermissions, setIsCheckingPermissions] = useState(true);
 
   // App Settings
   const [darkMode, setDarkMode] = useState(false);
@@ -62,6 +68,7 @@ export default function Settings() {
         "Check your notification tray to see the test notification."
       );
     } catch (error) {
+      console.log(error);
       showAlert(
         "error",
         "Error",
@@ -88,6 +95,214 @@ export default function Settings() {
         "Error",
         "Failed to send emergency notification. Please check your notification permissions."
       );
+    }
+  };
+
+  // Check all permissions on mount
+  useEffect(() => {
+    checkAllPermissions();
+  }, []);
+
+  const checkAllPermissions = async () => {
+    setIsCheckingPermissions(true);
+    await Promise.all([
+      checkLocationPermission(),
+      checkCameraPermission(),
+      checkMicrophonePermission(),
+      checkNotificationPermission(),
+    ]);
+    setIsCheckingPermissions(false);
+  };
+
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setLocationEnabled(status === "granted");
+    } catch (error) {
+      console.error("Error checking location permission:", error);
+    }
+  };
+
+  const checkCameraPermission = async () => {
+    try {
+      const { status } = await Camera.getCameraPermissionsAsync();
+      setCameraEnabled(status === "granted");
+    } catch (error) {
+      console.error("Error checking camera permission:", error);
+    }
+  };
+
+  const checkMicrophonePermission = async () => {
+    try {
+      const { status } = await Audio.getPermissionsAsync();
+      setMicrophoneEnabled(status === "granted");
+    } catch (error) {
+      console.error("Error checking microphone permission:", error);
+    }
+  };
+
+  const checkNotificationPermission = async () => {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      setNotificationsEnabled(status === "granted");
+    } catch (error) {
+      console.error("Error checking notification permission:", error);
+    }
+  };
+
+  const handleLocationToggle = async (value: boolean) => {
+    if (value) {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          setLocationEnabled(true);
+          showAlert(
+            "success",
+            "Location Enabled",
+            "Location access has been granted. You can now share your location during emergencies."
+          );
+        } else {
+          setLocationEnabled(false);
+          showAlert(
+            "warning",
+            "Permission Denied",
+            "Location permission was denied. Please enable it in your device settings to use location features."
+          );
+        }
+      } catch (error) {
+        setLocationEnabled(false);
+        showAlert(
+          "error",
+          "Error",
+          "Failed to request location permission. Please try again."
+        );
+      }
+    } else {
+      setLocationEnabled(false);
+      showAlert(
+        "info",
+        "Location Disabled",
+        "To re-enable location access, you'll need to grant permission again or enable it in device settings."
+      );
+    }
+  };
+
+  const handleCameraToggle = async (value: boolean) => {
+    if (value) {
+      try {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        if (status === "granted") {
+          setCameraEnabled(true);
+          showAlert(
+            "success",
+            "Camera Enabled",
+            "Camera access has been granted. You can now take photos during emergency reports."
+          );
+        } else {
+          setCameraEnabled(false);
+          showAlert(
+            "warning",
+            "Permission Denied",
+            "Camera permission was denied. Please enable it in your device settings to take photos."
+          );
+        }
+      } catch (error) {
+        setCameraEnabled(false);
+        showAlert(
+          "error",
+          "Error",
+          "Failed to request camera permission. Please try again."
+        );
+      }
+    } else {
+      setCameraEnabled(false);
+      showAlert(
+        "info",
+        "Camera Disabled",
+        "To re-enable camera access, you'll need to grant permission again or enable it in device settings."
+      );
+    }
+  };
+
+  const handleMicrophoneToggle = async (value: boolean) => {
+    if (value) {
+      try {
+        const { status } = await Audio.requestPermissionsAsync();
+        if (status === "granted") {
+          setMicrophoneEnabled(true);
+          showAlert(
+            "success",
+            "Microphone Enabled",
+            "Microphone access has been granted. You can now record audio during emergencies."
+          );
+        } else {
+          setMicrophoneEnabled(false);
+          showAlert(
+            "warning",
+            "Permission Denied",
+            "Microphone permission was denied. Please enable it in your device settings."
+          );
+        }
+      } catch (error) {
+        setMicrophoneEnabled(false);
+        showAlert(
+          "error",
+          "Error",
+          "Failed to request microphone permission. Please try again."
+        );
+      }
+    } else {
+      setMicrophoneEnabled(false);
+      showAlert(
+        "info",
+        "Microphone Disabled",
+        "To re-enable microphone access, you'll need to grant permission again or enable it in device settings."
+      );
+    }
+  };
+
+  const handleNotificationToggle = async (value: boolean) => {
+    if (value) {
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status === "granted") {
+          setNotificationsEnabled(true);
+          showAlert(
+            "success",
+            "Notifications Enabled",
+            "You will now receive emergency alerts and updates."
+          );
+        } else {
+          setNotificationsEnabled(false);
+          showAlert(
+            "warning",
+            "Permission Denied",
+            "Notification permission was denied. Please enable it in your device settings to receive emergency alerts."
+          );
+        }
+      } catch (error) {
+        setNotificationsEnabled(false);
+        showAlert(
+          "error",
+          "Error",
+          "Failed to request notification permission. Please try again."
+        );
+      }
+    } else {
+      setNotificationsEnabled(false);
+      if (Platform.OS === "ios") {
+        showAlert(
+          "info",
+          "Notifications Disabled",
+          "To re-enable notifications, please go to Settings > Notifications > INKINGI Rescue."
+        );
+      } else {
+        showAlert(
+          "info",
+          "Notifications Disabled",
+          "To re-enable notifications, please go to Settings > Apps > INKINGI Rescue > Notifications."
+        );
+      }
     }
   };
 
@@ -120,9 +335,10 @@ export default function Settings() {
               </View>
               <Switch
                 value={locationEnabled}
-                onValueChange={setLocationEnabled}
+                onValueChange={handleLocationToggle}
                 trackColor={{ false: "#d1d5db", true: "#fecaca" }}
                 thumbColor={locationEnabled ? "#e6491e" : "#f4f3f4"}
+                disabled={isCheckingPermissions}
               />
             </View>
 
@@ -140,9 +356,10 @@ export default function Settings() {
               </View>
               <Switch
                 value={cameraEnabled}
-                onValueChange={setCameraEnabled}
+                onValueChange={handleCameraToggle}
                 trackColor={{ false: "#d1d5db", true: "#fecaca" }}
                 thumbColor={cameraEnabled ? "#e6491e" : "#f4f3f4"}
+                disabled={isCheckingPermissions}
               />
             </View>
 
@@ -160,9 +377,10 @@ export default function Settings() {
               </View>
               <Switch
                 value={microphoneEnabled}
-                onValueChange={setMicrophoneEnabled}
+                onValueChange={handleMicrophoneToggle}
                 trackColor={{ false: "#d1d5db", true: "#fecaca" }}
                 thumbColor={microphoneEnabled ? "#e6491e" : "#f4f3f4"}
+                disabled={isCheckingPermissions}
               />
             </View>
 
@@ -180,9 +398,10 @@ export default function Settings() {
               </View>
               <Switch
                 value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
+                onValueChange={handleNotificationToggle}
                 trackColor={{ false: "#d1d5db", true: "#fecaca" }}
                 thumbColor={notificationsEnabled ? "#e6491e" : "#f4f3f4"}
+                disabled={isCheckingPermissions}
               />
             </View>
           </View>
@@ -273,7 +492,11 @@ export default function Settings() {
             >
               <View style={styles.settingLeft}>
                 <View style={styles.settingIcon}>
-                  <Ionicons name="notifications-outline" size={20} color="#e6491e" />
+                  <Ionicons
+                    name="notifications-outline"
+                    size={20}
+                    color="#e6491e"
+                  />
                 </View>
                 <View style={styles.settingInfo}>
                   <Text style={styles.settingTitle}>Test Notification</Text>
