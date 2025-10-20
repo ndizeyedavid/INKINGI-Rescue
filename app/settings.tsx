@@ -479,7 +479,7 @@ export default function Settings() {
 
         {/* Developer Tools Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Developer Tools</Text>
+          <Text style={styles.sectionTitle}>Functionality Testing</Text>
           <Text style={styles.sectionSubtitle}>
             Test notification functionality
           </Text>

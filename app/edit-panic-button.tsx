@@ -1,7 +1,7 @@
 import CustomAlert from "@/components/CustomAlert";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,15 +10,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { panicButtonsStorage } from "@/utils/panicButtonsStorage";
 
 export default function EditPanicButton() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
   
-  // Pre-filled data (would come from route params in real app)
   const [emergencyType, setEmergencyType] = useState("");
-  const [selectedType, setSelectedType] = useState<string | null>("fire");
-  const [selectedTrigger, setSelectedTrigger] = useState<string | null>("volume-3");
-  const [selectedMode, setSelectedMode] = useState<string | null>("loud");
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Alert states
   const [alertVisible, setAlertVisible] = useState(false);
@@ -36,6 +38,63 @@ export default function EditPanicButton() {
 
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Load panic button data
+  useEffect(() => {
+    loadPanicButton();
+  }, [id]);
+
+  const loadPanicButton = async () => {
+    if (!id) {
+      router.back();
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const button = await panicButtonsStorage.getButtonById(id);
+      if (button) {
+        // Match type
+        const matchedType = emergencyTypes.find(
+          (t) => t.label.toLowerCase() === button.type.toLowerCase()
+        );
+        if (matchedType) {
+          setSelectedType(matchedType.id);
+        } else {
+          setSelectedType("other");
+          setEmergencyType(button.type);
+        }
+
+        // Match trigger
+        const matchedTrigger = triggers.find(
+          (t) => t.label === button.trigger
+        );
+        if (matchedTrigger) {
+          setSelectedTrigger(matchedTrigger.id);
+        }
+
+        // Match mode
+        const matchedMode = modes.find(
+          (m) => m.label.toLowerCase() === button.mode.toLowerCase()
+        );
+        if (matchedMode) {
+          setSelectedMode(matchedMode.id);
+        }
+      } else {
+        showAlert("error", "Error", "Panic button not found", () => {
+          setAlertVisible(false);
+          router.back();
+        });
+      }
+    } catch (error) {
+      showAlert("error", "Error", "Failed to load panic button", () => {
+        setAlertVisible(false);
+        router.back();
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const emergencyTypes = [
     { id: "fire", label: "Fire", icon: "fire", color: "#FF6B35" },
@@ -94,7 +153,7 @@ export default function EditPanicButton() {
     setAlertVisible(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedType && !emergencyType.trim()) {
       showAlert(
         "warning",
@@ -116,33 +175,79 @@ export default function EditPanicButton() {
       return;
     }
 
-    // Save panic button logic here
-    showAlert(
-      "success",
-      "Success",
-      "Panic button updated successfully",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+    if (!id) return;
+
+    try {
+      // Get type details
+      const typeData = emergencyTypes.find((t) => t.id === selectedType);
+      const typeLabel = selectedType === "other" ? emergencyType.trim() : typeData?.label || "";
+      const typeIcon = typeData?.icon || "alert-circle";
+      const typeColor = typeData?.color || "#e6491e";
+
+      // Get trigger label
+      const triggerData = triggers.find((t) => t.id === selectedTrigger);
+      const triggerLabel = triggerData?.label || "";
+
+      // Get mode label
+      const modeData = modes.find((m) => m.id === selectedMode);
+      const modeLabel = modeData?.label || "";
+
+      // Update panic button in storage
+      await panicButtonsStorage.updateButton(id, {
+        type: typeLabel,
+        trigger: triggerLabel,
+        mode: modeLabel,
+        icon: typeIcon,
+        color: typeColor,
+      });
+
+      showAlert(
+        "success",
+        "Success",
+        "Panic button updated successfully",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to update panic button. Please try again."
+      );
+    }
   };
 
   const handleDelete = () => {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
-    // Delete panic button logic here
-    showAlert(
-      "success",
-      "Deleted",
-      "Panic button has been removed",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+  const confirmDelete = async () => {
+    if (!id) return;
+
+    try {
+      // Delete panic button from storage
+      await panicButtonsStorage.deleteButton(id);
+      
+      setShowDeleteConfirm(false);
+      showAlert(
+        "success",
+        "Deleted",
+        "Panic button has been removed",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      setShowDeleteConfirm(false);
+      showAlert(
+        "error",
+        "Error",
+        "Failed to delete panic button. Please try again."
+      );
+    }
   };
 
   const getSelectedTypeColor = () => {
