@@ -1,10 +1,9 @@
 export const colors = {
-  background: '#1a1a1a',
-  text: '#f2f2f2',
-  primary: '#4299e1',
-  primaryHover: '#3182ce',
-  border: '#2d3748',
-  textLight: '#a0aec0',
-  statusBadgeBg: '#4299e110',
-  statusBadgeText: '#4299e1',
+  background: '#f9f9f9',        // Softer white
+  backgroundLight: '#f6f8fa',   // Light gray-white for sections
+  text: '#4A5568',              // Neutral dark gray
+  textLight: '#718096',         // Muted text
+  border: '#e5e7eb',            // Gentle border
+  primary: '#ff6600',           // Main orange
+  primaryHover: '#e65c00',      // Darker orange for hover
 };
