@@ -3,11 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Animated, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Splash() {
   const router = useRouter();
+  const { t } = useTranslation();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
@@ -39,8 +41,8 @@ export default function Splash() {
       setTimeout(() => {
         if (hasSeenOnboarding === "true") {
           // User has seen onboarding, go to sign-in
-          router.replace("/(tabs)");
-          // router.replace("/onboarding");
+          // router.replace("/(tabs)");
+          router.replace("/onboarding");
         } else {
           // First time user, show onboarding
           router.replace("/onboarding");
@@ -84,9 +86,7 @@ export default function Splash() {
         </Animated.View>
 
         <Animated.View style={[styles.taglineContainer, { opacity: fadeAnim }]}>
-          <Text style={styles.tagline}>
-            Emergency Response at Your Fingertips
-          </Text>
+          <Text style={styles.tagline}>{t("splash.tagline")}</Text>
           <Text style={styles.version}>Version 1.0 alpha</Text>
         </Animated.View>
       </View>

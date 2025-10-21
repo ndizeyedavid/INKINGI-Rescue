@@ -8,6 +8,7 @@ import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Platform,
   ScrollView,
@@ -20,6 +21,7 @@ import {
 
 export default function Settings() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { sendNotification, sendEmergencyNotification } = useNotification();
 
   // Permissions

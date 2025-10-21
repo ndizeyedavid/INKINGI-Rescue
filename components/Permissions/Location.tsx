@@ -1,20 +1,22 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Location() {
+  const { t } = useTranslation();
   return (
-    <View className="flex-row items-center gap-2">
+    <View className="flex-row items-center justify-center gap-2 px-4">
       {/* icon here */}
       <View className="" style={styles.iconContainer}>
         <Ionicons name="location-outline" size={48} color={"#E6491E"} />
       </View>
       {/* text here */}
-      <View className="gap-2">
-        <Text className="font-bold" style={styles.titleText}>
-          Track Yourself
+      <View className="gap-2 flex-1">
+        <Text className="font-bold" style={styles.titleText} numberOfLines={2}>
+          {t("settings.locationAccess")}
         </Text>
-        <Text style={styles.subTitleText}>
-          Please allow location permission.
+        <Text style={styles.subTitleText} numberOfLines={3}>
+          {t("settings.locationDescription")}
         </Text>
       </View>
     </View>

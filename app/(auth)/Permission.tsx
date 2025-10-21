@@ -96,7 +96,7 @@ export default function PermissionScreen() {
           >
             {currentIndex == 3 ? "Finish" : "Allow"}
           </Button>
-          <TouchableOpacity className="w-full items-center">
+          <TouchableOpacity className="items-center w-full">
             <Text>Skip for now</Text>
           </TouchableOpacity>
         </View>
