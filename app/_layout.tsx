@@ -1,16 +1,33 @@
+import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { useShakeDetection } from "@/hooks/useShakeDetection";
+import "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { useCallback } from "react";
 import { StatusBar, TouchableOpacity } from "react-native";
-import { AuthProvider } from "../context/AuthContext";
 
 // Keep the splash screen visible while we fetch resources
 // SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function StackNavigator() {
   const router = useRouter();
 
+  // Handle shake detection
+  const handleShake = useCallback(() => {
+    console.log("Shake detected! Opening emergency report...");
+    router.push("/alert-loud");
+  }, [router]);
+
+  // Enable shake detection
+  useShakeDetection({
+    threshold: 2.0, // Adjust sensitivity (higher = less sensitive)
+    timeout: 1000, // 1 second between shakes
+    onShake: handleShake,
+  });
+
   return (
-    <AuthProvider>
+    <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen
@@ -409,8 +426,17 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-      {/* <Tabs /> */}
       <StatusBar barStyle="dark-content" />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <NotificationProvider>
+        <StackNavigator />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

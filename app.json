@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "INKINGI-Rescu-alpha",
-    "slug": "INKINGI-Rescu-alpha",
+    "slug": "inkingi-rescue",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -44,6 +44,23 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#E6491E",
+          "sounds": [
+            "./assets/sounds/notification.wav"
+          ]
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow INKINGI Rescue to access your camera to take photos during emergency reports."
+        }
+      ],
+      "expo-brightness",
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/logo.png",
@@ -60,6 +77,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "04f30c6c-aff4-4586-87f2-1696bf73b65b"
+      },
+      "router": {}
+    },
+    "owner": "davidndizeye"
   }
 }

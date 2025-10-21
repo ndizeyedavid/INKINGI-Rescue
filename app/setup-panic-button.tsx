@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { panicButtonsStorage } from "@/utils/panicButtonsStorage";
 
 export default function SetupPanicButton() {
   const router = useRouter();
@@ -89,7 +90,7 @@ export default function SetupPanicButton() {
     setAlertVisible(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedType && !emergencyType.trim()) {
       showAlert(
         "warning",
@@ -111,16 +112,46 @@ export default function SetupPanicButton() {
       return;
     }
 
-    // Save panic button logic here
-    showAlert(
-      "success",
-      "Success",
-      "Panic button configured successfully",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+    try {
+      // Get type details
+      const typeData = emergencyTypes.find((t) => t.id === selectedType);
+      const typeLabel = selectedType === "other" ? emergencyType.trim() : typeData?.label || "";
+      const typeIcon = typeData?.icon || "alert-circle";
+      const typeColor = typeData?.color || "#e6491e";
+
+      // Get trigger label
+      const triggerData = triggers.find((t) => t.id === selectedTrigger);
+      const triggerLabel = triggerData?.label || "";
+
+      // Get mode label
+      const modeData = modes.find((m) => m.id === selectedMode);
+      const modeLabel = modeData?.label || "";
+
+      // Save panic button to storage
+      await panicButtonsStorage.saveButton({
+        type: typeLabel,
+        trigger: triggerLabel,
+        mode: modeLabel,
+        icon: typeIcon,
+        color: typeColor,
+      });
+
+      showAlert(
+        "success",
+        "Success",
+        "Panic button configured successfully",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to save panic button. Please try again."
+      );
+    }
   };
 
   const getSelectedTypeColor = () => {

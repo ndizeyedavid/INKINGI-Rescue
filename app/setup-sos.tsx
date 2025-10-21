@@ -1,6 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import {
+  EmergencyContact,
+  emergencyContactsStorage,
+} from "@/utils/emergencyContactsStorage";
+import { PanicButton, panicButtonsStorage } from "@/utils/panicButtonsStorage";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Linking,
   ScrollView,
@@ -16,6 +22,14 @@ type TabType = "contacts" | "hotlines" | "panic";
 export default function SetupSos() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("contacts");
+  const [emergencyContacts, setEmergencyContacts] = useState<
+    EmergencyContact[]
+  >([]);
+  const [panicButtons, setPanicButtons] = useState<PanicButton[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingButtons, setIsLoadingButtons] = useState(true);
+
+  const { t } = useTranslation();
 
   const handleCall = (phoneNumber: string) => {
     const phoneUrl = `tel:${phoneNumber}`;
@@ -30,10 +44,39 @@ export default function SetupSos() {
       .catch((err) => console.error("Error opening dialer:", err));
   };
 
-  const [emergencyContacts] = useState([
-    { id: 1, name: "Mom", phone: "+250 788 111 222", relation: "Mother" },
-    { id: 2, name: "Dad", phone: "+250 788 333 444", relation: "Father" },
-  ]);
+  // Load contacts from storage
+  const loadContacts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const contacts = await emergencyContactsStorage.getContacts();
+      setEmergencyContacts(contacts);
+    } catch (error) {
+      console.error("Error loading contacts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load panic buttons from storage
+  const loadPanicButtons = useCallback(async () => {
+    setIsLoadingButtons(true);
+    try {
+      const buttons = await panicButtonsStorage.getButtons();
+      setPanicButtons(buttons);
+    } catch (error) {
+      console.error("Error loading panic buttons:", error);
+    } finally {
+      setIsLoadingButtons(false);
+    }
+  }, []);
+
+  // Reload data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadContacts();
+      loadPanicButtons();
+    }, [loadContacts, loadPanicButtons])
+  );
 
   const [hotlines] = useState([
     { id: 1, name: "Police", number: "112", icon: "shield-outline" },
@@ -44,25 +87,6 @@ export default function SetupSos() {
       name: "Gender Violence",
       number: "3512",
       icon: "alert-circle-outline",
-    },
-  ]);
-
-  const [panicButtons] = useState([
-    {
-      id: 1,
-      type: "Fire Emergency",
-      trigger: "Volume Down × 3",
-      mode: "Loud",
-      icon: "flame",
-      color: "#FF6B35",
-    },
-    {
-      id: 2,
-      type: "Robbery/Theft",
-      trigger: "Volume Down × 5",
-      mode: "Silent",
-      icon: "warning",
-      color: "#e6491e",
     },
   ]);
 
@@ -136,27 +160,53 @@ export default function SetupSos() {
             </Text>
 
             <View style={styles.contactsList}>
-              {emergencyContacts.map((contact) => (
-                <View key={contact.id} style={styles.contactCard}>
-                  <View style={styles.contactIcon}>
-                    <Ionicons name="person" size={24} color="#e6491e" />
-                  </View>
-                  <View style={styles.contactInfo}>
-                    <Text style={styles.contactName}>{contact.name}</Text>
-                    <Text style={styles.contactPhone}>{contact.phone}</Text>
-                    <Text style={styles.contactRelation}>
-                      {contact.relation}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.contactAction}
-                    onPress={() => router.push("/edit-emergency-contact")}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="create-outline" size={20} color="#666666" />
-                  </TouchableOpacity>
+              {isLoading ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>Loading contacts...</Text>
                 </View>
-              ))}
+              ) : emergencyContacts.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    name="person-add-outline"
+                    size={48}
+                    color="#cccccc"
+                  />
+                  <Text style={styles.emptyStateTitle}>
+                    No Emergency Contacts
+                  </Text>
+                  <Text style={styles.emptyStateText}>
+                    Add trusted contacts to notify in emergencies
+                  </Text>
+                </View>
+              ) : (
+                emergencyContacts.map((contact) => (
+                  <View key={contact.id} style={styles.contactCard}>
+                    <View style={styles.contactIcon}>
+                      <Ionicons name="person" size={24} color="#e6491e" />
+                    </View>
+                    <View style={styles.contactInfo}>
+                      <Text style={styles.contactName}>{contact.name}</Text>
+                      <Text style={styles.contactPhone}>{contact.phone}</Text>
+                      <Text style={styles.contactRelation}>
+                        {contact.relation}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.contactAction}
+                      onPress={() =>
+                        router.push(`/edit-emergency-contact?id=${contact.id}`)
+                      }
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={20}
+                        color="#666666"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
             </View>
           </View>
         )}
@@ -215,66 +265,83 @@ export default function SetupSos() {
             </Text>
 
             <View style={styles.panicButtonsList}>
-              {panicButtons.map((button) => (
-                <TouchableOpacity
-                  key={button.id}
-                  style={styles.panicCard}
-                  activeOpacity={0.7}
-                  onPress={() => router.push("/edit-panic-button")}
-                >
-                  <View
-                    style={[
-                      styles.panicIconContainer,
-                      { backgroundColor: button.color },
-                    ]}
+              {isLoadingButtons ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>
+                    Loading panic buttons...
+                  </Text>
+                </View>
+              ) : panicButtons.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={48}
+                    color="#cccccc"
+                  />
+                  <Text style={styles.emptyStateTitle}>No Panic Buttons</Text>
+                  <Text style={styles.emptyStateText}>
+                    Configure custom panic triggers for different emergencies
+                  </Text>
+                </View>
+              ) : (
+                panicButtons.map((button) => (
+                  <TouchableOpacity
+                    key={button.id}
+                    style={styles.panicCard}
+                    activeOpacity={0.7}
+                    onPress={() =>
+                      router.push(`/edit-panic-button?id=${button.id}`)
+                    }
                   >
-                    <Ionicons
-                      name={button.icon as any}
-                      size={28}
-                      color="#ffffff"
-                    />
-                  </View>
-                  <View style={styles.panicInfo}>
-                    <Text style={styles.panicType}>{button.type}</Text>
-                    <View style={styles.panicDetails}>
-                      <View style={styles.panicDetailItem}>
-                        <Ionicons
-                          name="hand-left-outline"
-                          size={16}
-                          color="#666666"
-                        />
-                        <Text style={styles.panicDetailText}>
-                          {button.trigger}
-                        </Text>
-                      </View>
-                      <View style={styles.panicDetailItem}>
-                        <Ionicons
-                          name={
-                            button.mode === "Loud"
-                              ? "volume-high"
-                              : "volume-mute"
-                          }
-                          size={16}
-                          color="#666666"
-                        />
-                        <Text style={styles.panicDetailText}>
-                          {button.mode}
-                        </Text>
+                    <View
+                      style={[
+                        styles.panicIconContainer,
+                        { backgroundColor: button.color },
+                      ]}
+                    >
+                      <FontAwesome6
+                        name={button.icon as any}
+                        size={28}
+                        color="#ffffff"
+                      />
+                    </View>
+                    <View style={styles.panicInfo}>
+                      <Text style={styles.panicType}>{button.type}</Text>
+                      <View style={styles.panicDetails}>
+                        <View style={styles.panicDetailItem}>
+                          <Ionicons
+                            name="hand-left-outline"
+                            size={16}
+                            color="#666666"
+                          />
+                          <Text style={styles.panicDetailText}>
+                            {button.trigger}
+                          </Text>
+                        </View>
+                        <View style={styles.panicDetailItem}>
+                          <Ionicons
+                            name={
+                              button.mode === "Loud"
+                                ? "volume-high"
+                                : "volume-mute"
+                            }
+                            size={16}
+                            color="#666666"
+                          />
+                          <Text style={styles.panicDetailText}>
+                            {button.mode}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#666666" />
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Info Card */}
-            <View style={styles.infoCard}>
-              <Ionicons name="information-circle" size={24} color="#e6491e" />
-              <Text style={styles.infoText}>
-                Panic buttons work even when your phone is locked. Make sure to
-                test them regularly.
-              </Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#666666"
+                    />
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           </View>
         )}
@@ -501,5 +568,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666666",
     lineHeight: 20,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 48,
+    paddingHorizontal: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000000",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: "#666666",
+    textAlign: "center",
   },
 });

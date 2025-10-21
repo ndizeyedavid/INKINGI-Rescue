@@ -1,9 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Tabs, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 export default function AppLayout() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -19,28 +22,38 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t('tabs.home'),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
 
       <Tabs.Screen
         name="sos"
         options={{
-          title: "SOS",
+          title: t('tabs.sos'),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="error-outline" size={size} color={color} />
           ),
           tabBarBadge: "2",
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
         }}
       />
 
       <Tabs.Screen
         name="map"
         options={{
-          title: "Map",
+          title: t('tabs.map'),
           tabBarIcon: ({ focused }) => (
             <View
               style={[
@@ -60,6 +73,7 @@ export default function AppLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
             router.push("/emergencies-map");
           },
         }}
@@ -68,19 +82,29 @@ export default function AppLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: "Community",
+          title: t('tabs.community'),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="people-outline" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t('tabs.profile'),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="person-outline" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
     </Tabs>

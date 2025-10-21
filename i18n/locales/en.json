@@ -1,0 +1,151 @@
+{
+  "common": {
+    "appName": "INKINGI Rescue",
+    "emergency": "Emergency",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip",
+    "getStarted": "Get Started",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "hello": "Hey!",
+    "help": "Help is just a click away!",
+    "click": "Click",
+    "call": "to call for help",
+    "volunteer": "Volunteer for help"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "fullName": "Full Name",
+    "phoneNumber": "Phone Number",
+    "welcomeBack": "Welcome Back!",
+    "welcome": "Welcome",
+    "orContinueWith": "or continue with",
+    "location": "District / Location",
+    "bloodType": "Blood Type",
+    "changePhoto": "Change Photo"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Report Emergencies Instantly",
+      "description": "Quickly report accidents, fires, medical emergencies, and more with just a few taps. Your safety is our priority."
+    },
+    "slide2": {
+      "title": "Real-Time Emergency Tracking",
+      "description": "Track emergency responses in real-time. See who's helping, get updates, and stay informed throughout the process."
+    },
+    "slide3": {
+      "title": "Community Support Network",
+      "description": "Join a community of volunteers ready to help. Volunteer for emergencies near you and make a difference in your community."
+    },
+    "slide4": {
+      "title": "Panic Buttons & Quick Access",
+      "description": "Configure custom panic buttons for instant alerts. Access emergency hotlines and your emergency contacts with one tap."
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "sos": "SOS",
+    "map": "Map",
+    "community": "Community",
+    "profile": "Profile"
+  },
+  "sos": {
+    "title": "EMERGENCIES",
+    "you": "Reported By You",
+    "others": "Reported By Others",
+    "reportedBy": "Reported by",
+    "volunteer": "volunteer",
+    "volunteers": "volunteers"
+  },
+  "community": {
+    "title": "COMMUNITY POSTS"
+  },
+  "profile": {
+    "title": "Profile",
+    "accountDetails": "Account Details",
+    "setupSoS": "Setup SoS",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "settings": {
+    "title": "Settings",
+    "permissions": "Permissions",
+    "permissionsSubtitle": "Manage app permissions for better functionality",
+    "locationAccess": "Location Access",
+    "locationDescription": "Required for emergency alerts",
+    "cameraAccess": "Camera Access",
+    "cameraDescription": "Take photos during emergencies",
+    "microphoneAccess": "Microphone Access",
+    "microphoneDescription": "Record audio during emergencies",
+    "panicButtonAccess": "Panic Button",
+    "panicButtonDescription": "Quick access to emergency services",
+    "notifications": "Notifications",
+    "notificationsDescription": "Receive emergency alerts",
+    "appPreferences": "App Preferences",
+    "appPreferencesSubtitle": "Customize your app experience",
+    "soundEffects": "Sound Effects",
+    "soundDescription": "Play sounds for alerts",
+    "vibration": "Vibration",
+    "vibrationDescription": "Vibrate on alerts",
+    "autoShareLocation": "Auto-Share Location",
+    "autoShareDescription": "Share location during SOS",
+    "functionalityTesting": "Functionality Testing",
+    "testingSubtitle": "Test notification functionality",
+    "testNotification": "Test Notification",
+    "testNotificationDescription": "Send a test notification",
+    "testEmergencyAlert": "Test Emergency Alert",
+    "testEmergencyDescription": "Send high-priority alert",
+    "testBroadcast": "Test Government Broadcast",
+    "testBroadcastDescription": "Simulate emergency broadcast",
+    "other": "Other",
+    "language": "Language",
+    "privacyPolicy": "Privacy Policy",
+    "privacyPolicyDescription": "View our privacy policy",
+    "termsOfService": "Terms of Service",
+    "termsDescription": "Read terms and conditions",
+    "version": "Version 1.0 Alpha"
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Select your preferred language for the app",
+    "english": "English",
+    "french": "French",
+    "kinyarwanda": "Kinyarwanda",
+    "swahili": "Swahili"
+  },
+  "broadcast": {
+    "extreme": "EXTREME",
+    "severe": "SEVERE",
+    "moderate": "MODERATE",
+    "advisory": "ADVISORY",
+    "alertMessage": "ALERT MESSAGE",
+    "affectedAreas": "Affected Areas",
+    "safetyInstructions": "Safety Instructions",
+    "emergencyContacts": "Emergency Contacts",
+    "expiresAt": "This alert expires at",
+    "iUnderstand": "I Understand",
+    "acknowledged": "Alert Acknowledged",
+    "closeBroadcast": "Close Broadcast",
+    "dismiss": "Dismiss"
+  },
+  "splash": {
+    "tagline": "Emergency Response at Your Fingertips"
+  }
+}

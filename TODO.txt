@@ -1,0 +1,30 @@
+mobile app
+==========
+
+1. push notifications [DONE]
+2. shake functionalities [DONE]
+3. volume down listening
+4. phone storage to save emergency contacts [DONE]
+5. phone storage to save panic options [DONE]
+6. loud alert page [DONE] || Haptics & vibrations [DONE]
+7. onBoarding, cool slides [DONE]
+8. splash screen animation [DONE]
+9. Emergency Broadcast screen [DONE]
+10. Language changing 
+
+Government Dashboard
+====================
+
+1. secure auth form
+2. enhance dashboard design
+3. match color with project branding
+4. Map integration(alerts, responders, volunteers[when the alert is selected])
+5. modal forms
+
+SMS & USSD (Africas Talking)
+=============================
+
+1. Setup Africas Talking server
+2. Integrate USSD endpoint
+3. Integrate SMS endpoint
+4. [BETA] Handle calls

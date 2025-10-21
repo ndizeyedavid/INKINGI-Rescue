@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,6 +17,7 @@ export default function SignUpScreen() {
   const router = useRouter();
   const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSignUp = async (
     name: string,
@@ -46,12 +48,12 @@ export default function SignUpScreen() {
     >
       <SafeAreaView className="flex-1 bg-[#f4f4f4]">
         <ScrollView>
-          <View className="flex-1 justify-center p-6" style={{ marginTop: 96 }}>
+          <View className="justify-center flex-1 p-6" style={{ marginTop: 96 }}>
             <View className="gap-2">
               <Text className="text-[#E6491E] text-[34px] font-bold">
-                Let's Sign you in.
+                {t("auth.signUp")}
               </Text>
-              <Text className="text-black/75 text-lg">Welcome Back.</Text>
+              <Text className="text-lg text-black/75">{t("auth.welcome")}</Text>
             </View>
 
             <SignUpForm onSignUp={handleSignUp} loading={loading} />

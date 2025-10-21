@@ -1,6 +1,7 @@
 import SignInForm from "@/components/auth/SignInForm";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,6 +17,7 @@ export default function SignInScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSignIn = async (email: string, password: string) => {
     setLoading(true);
@@ -52,9 +54,11 @@ export default function SignInScreen() {
           <View className="flex-1 justify-center p-6 mt-[96px]">
             <View className="gap-2">
               <Text className="text-[#E6491E] text-[34px] font-bold">
-                Let's Sign you in.
+                {t("auth.signIn")}
               </Text>
-              <Text className="text-black/75 text-lg">Welcome Back.</Text>
+              <Text className="text-lg text-black/75">
+                {t("auth.welcomeBack")}
+              </Text>
             </View>
 
             <SignInForm onSignIn={handleRedirect} loading={loading} />

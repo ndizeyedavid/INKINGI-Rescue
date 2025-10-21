@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
@@ -20,44 +22,49 @@ interface OnboardingSlide {
   id: string;
   title: string;
   description: string;
-  image: any;
+  animation?: any;
+  gif?: any;
+  type: "lottie" | "gif";
 }
 
-const slides: OnboardingSlide[] = [
-  {
-    id: "1",
-    title: "Report Emergencies Instantly",
-    description:
-      "Quickly report accidents, fires, medical emergencies, and more with just a few taps. Your safety is our priority.",
-    image: require("@/assets/images/logo.png"),
-  },
-  {
-    id: "2",
-    title: "Real-Time Emergency Tracking",
-    description:
-      "Track emergency responses in real-time. See who's helping, get updates, and stay informed throughout the process.",
-    image: require("@/assets/images/logo.png"),
-  },
-  {
-    id: "3",
-    title: "Community Support Network",
-    description:
-      "Join a community of volunteers ready to help. Volunteer for emergencies near you and make a difference in your community.",
-    image: require("@/assets/images/logo.png"),
-  },
-  {
-    id: "4",
-    title: "Panic Buttons & Quick Access",
-    description:
-      "Configure custom panic buttons for instant alerts. Access emergency hotlines and your emergency contacts with one tap.",
-    image: require("@/assets/images/logo.png"),
-  },
-];
+// Slides will be generated dynamically using translations
 
 export default function Onboarding() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+
+  const slides: OnboardingSlide[] = [
+    {
+      id: "1",
+      title: t("onboarding.slide1.title"),
+      description: t("onboarding.slide1.description"),
+      animation: require("@/assets/animations/firefighters.json"),
+      type: "lottie",
+    },
+    {
+      id: "2",
+      title: t("onboarding.slide2.title"),
+      description: t("onboarding.slide2.description"),
+      animation: require("@/assets/animations/asd.json"),
+      type: "lottie",
+    },
+    {
+      id: "3",
+      title: t("onboarding.slide3.title"),
+      description: t("onboarding.slide3.description"),
+      gif: require("@/assets/animations/community.gif"),
+      type: "gif",
+    },
+    {
+      id: "4",
+      title: t("onboarding.slide4.title"),
+      description: t("onboarding.slide4.description"),
+      animation: require("@/assets/animations/splash.json"),
+      type: "lottie",
+    },
+  ];
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -100,7 +107,16 @@ export default function Onboarding() {
     <View style={styles.slide}>
       <View style={styles.imageContainer}>
         <View style={styles.imageCircle}>
-          <Image source={item.image} style={styles.image} />
+          {item.type === "lottie" ? (
+            <LottieView
+              source={item.animation}
+              autoPlay
+              loop
+              style={styles.lottie}
+            />
+          ) : (
+            <Image source={item.gif} style={styles.gif} resizeMode="contain" />
+          )}
         </View>
       </View>
       <View style={styles.textContainer}>
@@ -119,7 +135,7 @@ export default function Onboarding() {
           onPress={handleSkip}
           activeOpacity={0.7}
         >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>{t("common.skip")}</Text>
         </TouchableOpacity>
       )}
 
@@ -158,7 +174,9 @@ export default function Onboarding() {
           activeOpacity={0.8}
         >
           <Text style={styles.nextButtonText}>
-            {currentIndex === slides.length - 1 ? "Get Started" : "Next"}
+            {currentIndex === slides.length - 1
+              ? t("common.getStarted")
+              : t("common.next")}
           </Text>
           <Ionicons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
@@ -206,10 +224,13 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#e6491e",
   },
-  image: {
-    width: 180,
-    height: 180,
-    resizeMode: "contain",
+  lottie: {
+    width: 240,
+    height: 240,
+  },
+  gif: {
+    width: 215,
+    height: 215,
   },
   textContainer: {
     paddingHorizontal: 20,

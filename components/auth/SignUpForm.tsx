@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import Button from "../Button";
 import FormInput from "./FormInput";
@@ -17,7 +18,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const { t } = useTranslation();
   const handleSignUp = () => {
     onSignUp(name, email, password);
   };
@@ -34,7 +35,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
   return (
     <View className="w-full mt-[28px] h-full">
       <View
-        className="flex-row justify-center items-center"
+        className="flex-row items-center justify-center"
         style={{ gap: 20 }}
       >
         <TouchableOpacity activeOpacity={0.8}>
@@ -71,20 +72,21 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         className="flex-row items-center w-full px-4"
         style={{ marginTop: 30, marginBottom: 30 }}
       >
-        <View className="border border-black flex-1" style={{ opacity: 0.5 }} />
+        <View className="flex-1 border border-black" style={{ opacity: 0.5 }} />
         <Text
-          className="text-center text-black text-lg mx-4"
+          className="mx-4 text-lg text-center text-black"
           style={{ opacity: 0.7 }}
         >
           {"  "}
-          or continue with{"    "}
+          {t("auth.orContinueWith")}
+          {"    "}
         </Text>
-        <View className="border border-black flex-1" style={{ opacity: 0.5 }} />
+        <View className="flex-1 border border-black" style={{ opacity: 0.5 }} />
       </View>
 
       <View className="gap-[26px]">
         <FormInput
-          label="Full Name"
+          label={t("auth.fullName")}
           icon="person-outline"
           placeholder="Your name"
           keyboardType="default"
@@ -92,37 +94,37 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         <FormInput
           label="Email"
           icon="mail-outline"
-          placeholder="Your email"
+          placeholder={t("auth.email")}
           keyboardType="email-address"
         />
         <FormInput
           label="Password"
           icon="lock-closed-outline"
-          placeholder="Enter Password"
+          placeholder={t("auth.password")}
           keyboardType="default"
           secureTextEntry={true}
         />
         <FormInput
-          label="Confirm Password"
+          label={t("auth.confirmPassword")}
           icon="lock-closed-outline"
-          placeholder="Re-enter Password"
+          placeholder={t("auth.confirmPassword")}
           keyboardType="default"
           secureTextEntry={true}
         />
       </View>
 
       <View>
-        <Button>Sign Up</Button>
+        <Button>{t("auth.signUp")}</Button>
       </View>
 
       <View className="mt-[22px] ">
-        <Text className="text-center text-black text-lg">
+        <Text className="text-lg text-center text-black">
           Already have an account?{" "}
           <Link
             href="/(auth)/sign-in"
             className="text-[#E6491E] font-bold active:opacity-90"
           >
-            Sign in
+            {t("auth.signIn")}
           </Link>
         </Text>
       </View>

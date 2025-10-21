@@ -1,11 +1,13 @@
 import Header from "@/components/Header";
 import SosButton from "@/components/SosButton";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomePage() {
   const [isVolunteer, setIsVolunteer] = useState<boolean>(false);
+  const { t } = useTranslation();
 
   const toggleSwitch = () => {
     setIsVolunteer((isVolunteer) => !isVolunteer);
@@ -17,10 +19,10 @@ export default function HomePage() {
         <Header />
 
         <View style={styles.textContainer}>
-          <Text style={styles.text}>Help is Just a click away!</Text>
+          <Text style={styles.text}>{t("common.help")}</Text>
           <Text style={styles.text}>
-            Click <Text style={styles.boldText}>SOS Button</Text> to call for
-            help
+            {t("common.click")} <Text style={styles.boldText}>SOS Button</Text>{" "}
+            {t("common.call")}
           </Text>
         </View>
 
@@ -28,7 +30,7 @@ export default function HomePage() {
         <SosButton />
 
         <View style={styles.volunteerContainer}>
-          <Text style={styles.volunteerText}>Volunteer for help</Text>
+          <Text style={styles.volunteerText}>{t("common.volunteer")}</Text>
           <Switch
             trackColor={{ false: "#767577", true: "#e6491e" }}
             onValueChange={toggleSwitch}

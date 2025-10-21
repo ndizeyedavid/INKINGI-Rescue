@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { emergencyContactsStorage } from "@/utils/emergencyContactsStorage";
 
 export default function AddEmergencyContact() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function AddEmergencyContact() {
     setAlertVisible(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       showAlert("warning", "Missing Information", "Please enter a name");
       return;
@@ -73,16 +74,35 @@ export default function AddEmergencyContact() {
       return;
     }
 
-    // Save contact logic here
-    showAlert(
-      "success",
-      "Success",
-      "Emergency contact added successfully",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+    try {
+      // Get the relation label
+      const relationLabel = selectedRelation
+        ? relations.find((r) => r.id === selectedRelation)?.label || relation
+        : relation;
+
+      // Save contact to storage
+      await emergencyContactsStorage.saveContact({
+        name: name.trim(),
+        phone: phone.trim(),
+        relation: relationLabel,
+      });
+
+      showAlert(
+        "success",
+        "Success",
+        "Emergency contact added successfully",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to save contact. Please try again."
+      );
+    }
   };
 
   return (

@@ -1,19 +1,23 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Camera() {
+  const { t } = useTranslation();
   return (
-    <View className="flex-row items-center gap-2">
+    <View className="flex-row items-center justify-center gap-2 px-4">
       {/* icon here */}
       <View className="" style={styles.iconContainer}>
         <Ionicons name="camera-outline" size={48} color={"#E6491E"} />
       </View>
       {/* text here */}
-      <View className="gap-2">
-        <Text className="font-bold" style={styles.titleText}>
-          Capture emergency.
+      <View className="gap-2 flex-1">
+        <Text className="font-bold" style={styles.titleText} numberOfLines={2}>
+          {t("settings.cameraAccess")}
         </Text>
-        <Text style={styles.subTitleText}>Please allow camera permission.</Text>
+        <Text style={styles.subTitleText} numberOfLines={3}>
+          {t("settings.cameraDescription")}
+        </Text>
       </View>
     </View>
   );

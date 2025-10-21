@@ -1,17 +1,34 @@
 import PageHeader from "@/components/pageHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfilePage() {
   const router = useRouter();
-
+  const { t } = useTranslation();
   const menuItems = [
-    { title: "Account Details", icon: "person-outline", route: "/account-details" },
-    { title: "Setup SoS", icon: "alert-circle-outline", route: "/setup-sos" },
-    { title: "Settings", icon: "settings-outline", route: "/settings" },
-    { title: "About", icon: "information-circle-outline", route: "/about" },
+    {
+      title: t("profile.accountDetails"),
+      icon: "person-outline",
+      route: "/account-details",
+    },
+    {
+      title: t("profile.setupSoS"),
+      icon: "alert-circle-outline",
+      route: "/setup-sos",
+    },
+    {
+      title: "Settings",
+      icon: "settings-outline",
+      route: "/settings",
+    },
+    {
+      title: "About",
+      icon: "information-circle-outline",
+      route: "/about",
+    },
   ];
 
   const handleMenuPress = (route: string) => {

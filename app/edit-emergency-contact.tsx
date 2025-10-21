@@ -1,7 +1,7 @@
 import CustomAlert from "@/components/CustomAlert";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,15 +10,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { emergencyContactsStorage } from "@/utils/emergencyContactsStorage";
 
 export default function EditEmergencyContact() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
   
-  // Pre-filled data (would come from route params in real app)
-  const [name, setName] = useState("Mom");
-  const [phone, setPhone] = useState("+250 788 111 222");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [relation, setRelation] = useState("");
-  const [selectedRelation, setSelectedRelation] = useState<string | null>("mother");
+  const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Alert states
   const [alertVisible, setAlertVisible] = useState(false);
@@ -36,6 +38,49 @@ export default function EditEmergencyContact() {
 
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Load contact data
+  useEffect(() => {
+    loadContact();
+  }, [id]);
+
+  const loadContact = async () => {
+    if (!id) {
+      router.back();
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const contact = await emergencyContactsStorage.getContactById(id);
+      if (contact) {
+        setName(contact.name);
+        setPhone(contact.phone);
+        // Try to match relation to predefined options
+        const matchedRelation = relations.find(
+          (r) => r.label.toLowerCase() === contact.relation.toLowerCase()
+        );
+        if (matchedRelation) {
+          setSelectedRelation(matchedRelation.id);
+        } else {
+          setSelectedRelation("other");
+          setRelation(contact.relation);
+        }
+      } else {
+        showAlert("error", "Error", "Contact not found", () => {
+          setAlertVisible(false);
+          router.back();
+        });
+      }
+    } catch (error) {
+      showAlert("error", "Error", "Failed to load contact", () => {
+        setAlertVisible(false);
+        router.back();
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const relations = [
     { id: "mother", label: "Mother", icon: "woman" },
@@ -56,7 +101,7 @@ export default function EditEmergencyContact() {
     setAlertVisible(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       showAlert("warning", "Missing Information", "Please enter a name");
       return;
@@ -78,33 +123,68 @@ export default function EditEmergencyContact() {
       return;
     }
 
-    // Save contact logic here
-    showAlert(
-      "success",
-      "Success",
-      "Emergency contact updated successfully",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+    if (!id) return;
+
+    try {
+      // Get the relation label
+      const relationLabel = selectedRelation
+        ? relations.find((r) => r.id === selectedRelation)?.label || relation
+        : relation;
+
+      // Update contact in storage
+      await emergencyContactsStorage.updateContact(id, {
+        name: name.trim(),
+        phone: phone.trim(),
+        relation: relationLabel,
+      });
+
+      showAlert(
+        "success",
+        "Success",
+        "Emergency contact updated successfully",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      showAlert(
+        "error",
+        "Error",
+        "Failed to update contact. Please try again."
+      );
+    }
   };
 
   const handleDelete = () => {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
-    // Delete contact logic here
-    showAlert(
-      "success",
-      "Deleted",
-      "Emergency contact has been removed",
-      () => {
-        setAlertVisible(false);
-        router.back();
-      }
-    );
+  const confirmDelete = async () => {
+    if (!id) return;
+
+    try {
+      // Delete contact from storage
+      await emergencyContactsStorage.deleteContact(id);
+      
+      setShowDeleteConfirm(false);
+      showAlert(
+        "success",
+        "Deleted",
+        "Emergency contact has been removed",
+        () => {
+          setAlertVisible(false);
+          router.back();
+        }
+      );
+    } catch (error) {
+      setShowDeleteConfirm(false);
+      showAlert(
+        "error",
+        "Error",
+        "Failed to delete contact. Please try again."
+      );
+    }
   };
 
   return (

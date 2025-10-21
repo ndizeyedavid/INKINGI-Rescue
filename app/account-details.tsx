@@ -1,6 +1,7 @@
 import LocationPickerModal from "@/components/LocationPickerModal";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -21,6 +22,8 @@ export default function AccountDetails() {
   const [bloodType, setBloodType] = useState("O+");
   const [showPassword, setShowPassword] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const { t } = useTranslation();
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -53,7 +56,7 @@ export default function AccountDetails() {
             style={styles.changePhotoButton}
             activeOpacity={0.7}
           >
-            <Text style={styles.changePhotoText}>Change Photo</Text>
+            <Text style={styles.changePhotoText}>{t("auth.changePhoto")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -61,7 +64,7 @@ export default function AccountDetails() {
         <View style={styles.formSection}>
           {/* Full Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>{t("auth.fullName")}</Text>
             {isEditing ? (
               <TextInput
                 style={styles.input}
@@ -79,7 +82,7 @@ export default function AccountDetails() {
 
           {/* Phone Number */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>{t("auth.phoneNumber")}</Text>
             {isEditing ? (
               <TextInput
                 style={styles.input}
@@ -98,7 +101,7 @@ export default function AccountDetails() {
 
           {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>{t("auth.email")}</Text>
             {isEditing ? (
               <TextInput
                 style={styles.input}
@@ -118,7 +121,7 @@ export default function AccountDetails() {
 
           {/* Password */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>{t("auth.password")}</Text>
             {isEditing ? (
               <View style={styles.passwordContainer}>
                 <TextInput
@@ -149,7 +152,7 @@ export default function AccountDetails() {
 
           {/* District */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>District / Location</Text>
+            <Text style={styles.label}>{t("auth.location")}</Text>
             {isEditing ? (
               <TouchableOpacity
                 style={styles.locationInput}
@@ -172,7 +175,7 @@ export default function AccountDetails() {
 
           {/* Blood Type */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Blood Type</Text>
+            <Text style={styles.label}>{t("auth.bloodType")}</Text>
             {isEditing ? (
               <TextInput
                 style={styles.input}
