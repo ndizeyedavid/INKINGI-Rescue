@@ -16,7 +16,12 @@
     "error": "Error",
     "success": "Success",
     "warning": "Warning",
-    "info": "Info"
+    "info": "Info",
+    "hello": "Hey!",
+    "help": "Help is just a click away!",
+    "click": "Click",
+    "call": "to call for help",
+    "volunteer": "Volunteer for help"
   },
   "auth": {
     "signIn": "Sign In",
@@ -28,7 +33,13 @@
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
     "fullName": "Full Name",
-    "phoneNumber": "Phone Number"
+    "phoneNumber": "Phone Number",
+    "welcomeBack": "Welcome Back!",
+    "welcome": "Welcome",
+    "orContinueWith": "or continue with",
+    "location": "District / Location",
+    "bloodType": "Blood Type",
+    "changePhoto": "Change Photo"
   },
   "onboarding": {
     "slide1": {
@@ -55,6 +66,24 @@
     "community": "Community",
     "profile": "Profile"
   },
+  "sos": {
+    "title": "EMERGENCIES",
+    "you": "Reported By You",
+    "others": "Reported By Others",
+    "reportedBy": "Reported by",
+    "volunteer": "volunteer",
+    "volunteers": "volunteers"
+  },
+  "community": {
+    "title": "COMMUNITY POSTS"
+  },
+  "profile": {
+    "title": "Profile",
+    "accountDetails": "Account Details",
+    "setupSoS": "Setup SoS",
+    "settings": "Settings",
+    "about": "About"
+  },
   "settings": {
     "title": "Settings",
     "permissions": "Permissions",
@@ -65,6 +94,8 @@
     "cameraDescription": "Take photos during emergencies",
     "microphoneAccess": "Microphone Access",
     "microphoneDescription": "Record audio during emergencies",
+    "panicButtonAccess": "Panic Button",
+    "panicButtonDescription": "Quick access to emergency services",
     "notifications": "Notifications",
     "notificationsDescription": "Receive emergency alerts",
     "appPreferences": "App Preferences",
