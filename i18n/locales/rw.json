@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "INKINGI Gutabara",
+    "emergency": "Ihutirwa",
+    "cancel": "Kureka",
+    "confirm": "Kwemeza",
+    "save": "Kubika",
+    "delete": "Gusiba",
+    "edit": "Guhindura",
+    "close": "Gufunga",
+    "next": "Ibikurikira",
+    "back": "Gusubira inyuma",
+    "skip": "Gusimbuka",
+    "getStarted": "Tangira",
+    "loading": "Biratunganywa...",
+    "error": "Ikosa",
+    "success": "Byagenze neza",
+    "warning": "Iburira",
+    "info": "Amakuru"
+  },
+  "auth": {
+    "signIn": "Kwinjira",
+    "signUp": "Kwiyandikisha",
+    "email": "Imeri",
+    "password": "Ijambo ryibanga",
+    "confirmPassword": "Kwemeza ijambo ryibanga",
+    "forgotPassword": "Wibagiwe ijambo ryibanga?",
+    "dontHaveAccount": "Nta konti ufite?",
+    "alreadyHaveAccount": "Usanzwe ufite konti?",
+    "fullName": "Amazina yombi",
+    "phoneNumber": "Nimero ya telefoni"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Kumenyesha Ihutirwa ako kanya",
+      "description": "Menyesha vuba impanuka, inkongi y'umuriro, ihutirwa ry'ubuvuzi, n'ibindi byinshi mu buryo bworoshye. Umutekano wawe ni intego yacu."
+    },
+    "slide2": {
+      "title": "Gukurikirana Ihutirwa mu gihe nyacyo",
+      "description": "Kurikirana ibisubizo by'ihutirwa mu gihe nyacyo. Reba uwufasha, kubona amakuru mashya, kandi ukomeze kumenyeshwa mu nzira yose."
+    },
+    "slide3": {
+      "title": "Urusobe rw'Abaturage",
+      "description": "Injira mu muryango w'abakorerabushake biteguye gufasha. Kora ubukorerabushake mu bihutirwa hafi yawe kandi ugire uruhare mu muryango wawe."
+    },
+    "slide4": {
+      "title": "Buto zo Guhamagara n'Ukugera Vuba",
+      "description": "Shiraho buto zo guhamagara zihariye kugirango ubone inyishu ako kanya. Gera ku murongo w'ihutirwa n'abantu bawe bo guhamagara mu gihe cy'ihutirwa mu kanya kamwe."
+    }
+  },
+  "tabs": {
+    "home": "Ahabanza",
+    "sos": "SOS",
+    "map": "Ikarita",
+    "community": "Abaturage",
+    "profile": "Umwirondoro"
+  },
+  "settings": {
+    "title": "Igenamiterere",
+    "permissions": "Uburenganzira",
+    "permissionsSubtitle": "Gucunga uburenganzira bwa porogaramu kugirango ikore neza",
+    "locationAccess": "Kugera ku hantu",
+    "locationDescription": "Birakenewe kugirango ubone inyishu z'ihutirwa",
+    "cameraAccess": "Kugera kuri kamera",
+    "cameraDescription": "Gufata amafoto mu gihe cy'ihutirwa",
+    "microphoneAccess": "Kugera kuri mikoro",
+    "microphoneDescription": "Gufata amajwi mu gihe cy'ihutirwa",
+    "notifications": "Inyishu",
+    "notificationsDescription": "Kwakira inyishu z'ihutirwa",
+    "appPreferences": "Ibyifuzo bya porogaramu",
+    "appPreferencesSubtitle": "Hindura uburyo ukoresha porogaramu",
+    "soundEffects": "Amajwi",
+    "soundDescription": "Gukina amajwi ku nyishu",
+    "vibration": "Kunyeganyega",
+    "vibrationDescription": "Kunyeganyega ku nyishu",
+    "autoShareLocation": "Gusangira ahantu byikora",
+    "autoShareDescription": "Gusangira ahantu mu gihe cya SOS",
+    "functionalityTesting": "Kugerageza imikorere",
+    "testingSubtitle": "Kugerageza imikorere y'inyishu",
+    "testNotification": "Inyishu yo kugerageza",
+    "testNotificationDescription": "Kohereza inyishu yo kugerageza",
+    "testEmergencyAlert": "Inyishu y'ihutirwa yo kugerageza",
+    "testEmergencyDescription": "Kohereza inyishu y'ibanze",
+    "testBroadcast": "Itangazo rya Leta ryo kugerageza",
+    "testBroadcastDescription": "Kugerageza itangazo ry'ihutirwa",
+    "other": "Ibindi",
+    "language": "Ururimi",
+    "privacyPolicy": "Politiki y'ibanga",
+    "privacyPolicyDescription": "Reba politiki yacu y'ibanga",
+    "termsOfService": "Amabwiriza yo gukoresha",
+    "termsDescription": "Soma amabwiriza n'amategeko",
+    "version": "Verisiyo 1.0 Alpha"
+  },
+  "language": {
+    "title": "Ururimi",
+    "subtitle": "Hitamo ururimi ukunda kugirango ukoreshe porogaramu",
+    "english": "Icyongereza",
+    "french": "Igifaransa",
+    "kinyarwanda": "Ikinyarwanda",
+    "swahili": "Igiswahili"
+  },
+  "broadcast": {
+    "extreme": "IKABIJE CYANE",
+    "severe": "IKABIJE",
+    "moderate": "ICYICYICYO",
+    "advisory": "INAMA",
+    "alertMessage": "UBUTUMWA BW'INYISHU",
+    "affectedAreas": "Uturere twanduye",
+    "safetyInstructions": "Amabwiriza y'umutekano",
+    "emergencyContacts": "Aho guhamagara mu gihe cy'ihutirwa",
+    "expiresAt": "Iyi nyishu irangira ku",
+    "iUnderstand": "Ndabyumva",
+    "acknowledged": "Inyishu yemewe",
+    "closeBroadcast": "Gufunga itangazo",
+    "dismiss": "Kureka"
+  },
+  "splash": {
+    "tagline": "Ibisubizo by'Ihutirwa mu ntoki zawe"
+  }
+}

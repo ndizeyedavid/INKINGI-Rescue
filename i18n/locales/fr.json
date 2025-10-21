@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "INKINGI Secours",
+    "emergency": "Urgence",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "next": "Suivant",
+    "back": "Retour",
+    "skip": "Passer",
+    "getStarted": "Commencer",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "info": "Info"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "dontHaveAccount": "Vous n'avez pas de compte?",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "fullName": "Nom complet",
+    "phoneNumber": "Numéro de téléphone"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Signaler les urgences instantanément",
+      "description": "Signalez rapidement les accidents, les incendies, les urgences médicales et plus encore en quelques clics. Votre sécurité est notre priorité."
+    },
+    "slide2": {
+      "title": "Suivi des urgences en temps réel",
+      "description": "Suivez les interventions d'urgence en temps réel. Voyez qui aide, recevez des mises à jour et restez informé tout au long du processus."
+    },
+    "slide3": {
+      "title": "Réseau de soutien communautaire",
+      "description": "Rejoignez une communauté de bénévoles prêts à aider. Portez-vous volontaire pour les urgences près de chez vous et faites la différence dans votre communauté."
+    },
+    "slide4": {
+      "title": "Boutons panique et accès rapide",
+      "description": "Configurez des boutons panique personnalisés pour des alertes instantanées. Accédez aux lignes d'urgence et à vos contacts d'urgence en un seul clic."
+    }
+  },
+  "tabs": {
+    "home": "Accueil",
+    "sos": "SOS",
+    "map": "Carte",
+    "community": "Communauté",
+    "profile": "Profil"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "permissions": "Autorisations",
+    "permissionsSubtitle": "Gérer les autorisations de l'application pour une meilleure fonctionnalité",
+    "locationAccess": "Accès à la localisation",
+    "locationDescription": "Requis pour les alertes d'urgence",
+    "cameraAccess": "Accès à la caméra",
+    "cameraDescription": "Prendre des photos pendant les urgences",
+    "microphoneAccess": "Accès au microphone",
+    "microphoneDescription": "Enregistrer l'audio pendant les urgences",
+    "notifications": "Notifications",
+    "notificationsDescription": "Recevoir des alertes d'urgence",
+    "appPreferences": "Préférences de l'application",
+    "appPreferencesSubtitle": "Personnalisez votre expérience d'application",
+    "soundEffects": "Effets sonores",
+    "soundDescription": "Jouer des sons pour les alertes",
+    "vibration": "Vibration",
+    "vibrationDescription": "Vibrer lors des alertes",
+    "autoShareLocation": "Partage automatique de la localisation",
+    "autoShareDescription": "Partager la localisation pendant SOS",
+    "functionalityTesting": "Test de fonctionnalité",
+    "testingSubtitle": "Tester la fonctionnalité de notification",
+    "testNotification": "Notification de test",
+    "testNotificationDescription": "Envoyer une notification de test",
+    "testEmergencyAlert": "Alerte d'urgence de test",
+    "testEmergencyDescription": "Envoyer une alerte haute priorité",
+    "testBroadcast": "Diffusion gouvernementale de test",
+    "testBroadcastDescription": "Simuler une diffusion d'urgence",
+    "other": "Autre",
+    "language": "Langue",
+    "privacyPolicy": "Politique de confidentialité",
+    "privacyPolicyDescription": "Voir notre politique de confidentialité",
+    "termsOfService": "Conditions d'utilisation",
+    "termsDescription": "Lire les termes et conditions",
+    "version": "Version 1.0 Alpha"
+  },
+  "language": {
+    "title": "Langue",
+    "subtitle": "Sélectionnez votre langue préférée pour l'application",
+    "english": "Anglais",
+    "french": "Français",
+    "kinyarwanda": "Kinyarwanda",
+    "swahili": "Swahili"
+  },
+  "broadcast": {
+    "extreme": "EXTRÊME",
+    "severe": "SÉVÈRE",
+    "moderate": "MODÉRÉ",
+    "advisory": "AVIS",
+    "alertMessage": "MESSAGE D'ALERTE",
+    "affectedAreas": "Zones touchées",
+    "safetyInstructions": "Instructions de sécurité",
+    "emergencyContacts": "Contacts d'urgence",
+    "expiresAt": "Cette alerte expire à",
+    "iUnderstand": "Je comprends",
+    "acknowledged": "Alerte acquittée",
+    "closeBroadcast": "Fermer la diffusion",
+    "dismiss": "Ignorer"
+  },
+  "splash": {
+    "tagline": "Intervention d'urgence à portée de main"
+  }
+}

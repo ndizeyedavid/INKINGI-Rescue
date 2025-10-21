@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { useShakeDetection } from "@/hooks/useShakeDetection";
+import "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useCallback } from "react";

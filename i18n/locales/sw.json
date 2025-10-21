@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "INKINGI Uokoaji",
+    "emergency": "Dharura",
+    "cancel": "Ghairi",
+    "confirm": "Thibitisha",
+    "save": "Hifadhi",
+    "delete": "Futa",
+    "edit": "Hariri",
+    "close": "Funga",
+    "next": "Ifuatayo",
+    "back": "Rudi",
+    "skip": "Ruka",
+    "getStarted": "Anza",
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio",
+    "warning": "Onyo",
+    "info": "Taarifa"
+  },
+  "auth": {
+    "signIn": "Ingia",
+    "signUp": "Jisajili",
+    "email": "Barua pepe",
+    "password": "Nywila",
+    "confirmPassword": "Thibitisha nywila",
+    "forgotPassword": "Umesahau nywila?",
+    "dontHaveAccount": "Huna akaunti?",
+    "alreadyHaveAccount": "Tayari una akaunti?",
+    "fullName": "Jina kamili",
+    "phoneNumber": "Nambari ya simu"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Ripoti Dharura Mara Moja",
+      "description": "Ripoti haraka ajali, moto, dharura za kimatibabu, na zaidi kwa mibofyo michache tu. Usalama wako ni kipaumbele chetu."
+    },
+    "slide2": {
+      "title": "Ufuatiliaji wa Dharura wa Wakati Halisi",
+      "description": "Fuatilia majibu ya dharura kwa wakati halisi. Ona ni nani anasaidia, pata masasisho, na uendelee kufahamishwa katika mchakato wote."
+    },
+    "slide3": {
+      "title": "Mtandao wa Msaada wa Jamii",
+      "description": "Jiunge na jamii ya wajitoleaji tayari kusaidia. Jitolee kwa dharura karibu nawe na fanya tofauti katika jamii yako."
+    },
+    "slide4": {
+      "title": "Vifungo vya Dharura na Ufikiaji wa Haraka",
+      "description": "Sanidi vifungo vya dharura maalum kwa tahadhari za papo hapo. Fikia mistari ya dharura na mawasiliano yako ya dharura kwa kubonyeza mara moja."
+    }
+  },
+  "tabs": {
+    "home": "Nyumbani",
+    "sos": "SOS",
+    "map": "Ramani",
+    "community": "Jamii",
+    "profile": "Wasifu"
+  },
+  "settings": {
+    "title": "Mipangilio",
+    "permissions": "Ruhusa",
+    "permissionsSubtitle": "Dhibiti ruhusa za programu kwa utendaji bora",
+    "locationAccess": "Ufikiaji wa Eneo",
+    "locationDescription": "Inahitajika kwa tahadhari za dharura",
+    "cameraAccess": "Ufikiaji wa Kamera",
+    "cameraDescription": "Piga picha wakati wa dharura",
+    "microphoneAccess": "Ufikiaji wa Kipaza Sauti",
+    "microphoneDescription": "Rekodi sauti wakati wa dharura",
+    "notifications": "Arifa",
+    "notificationsDescription": "Pokea tahadhari za dharura",
+    "appPreferences": "Mapendeleo ya Programu",
+    "appPreferencesSubtitle": "Binafsisha uzoefu wako wa programu",
+    "soundEffects": "Athari za Sauti",
+    "soundDescription": "Cheza sauti kwa tahadhari",
+    "vibration": "Mtetemo",
+    "vibrationDescription": "Tetema kwenye tahadhari",
+    "autoShareLocation": "Shiriki Eneo Kiotomatiki",
+    "autoShareDescription": "Shiriki eneo wakati wa SOS",
+    "functionalityTesting": "Majaribio ya Utendaji",
+    "testingSubtitle": "Jaribu utendaji wa arifa",
+    "testNotification": "Arifa ya Majaribio",
+    "testNotificationDescription": "Tuma arifa ya majaribio",
+    "testEmergencyAlert": "Tahadhari ya Dharura ya Majaribio",
+    "testEmergencyDescription": "Tuma tahadhari ya kipaumbele cha juu",
+    "testBroadcast": "Matangazo ya Serikali ya Majaribio",
+    "testBroadcastDescription": "Iga matangazo ya dharura",
+    "other": "Nyingine",
+    "language": "Lugha",
+    "privacyPolicy": "Sera ya Faragha",
+    "privacyPolicyDescription": "Tazama sera yetu ya faragha",
+    "termsOfService": "Masharti ya Huduma",
+    "termsDescription": "Soma masharti na hali",
+    "version": "Toleo 1.0 Alpha"
+  },
+  "language": {
+    "title": "Lugha",
+    "subtitle": "Chagua lugha unayopendelea kwa programu",
+    "english": "Kiingereza",
+    "french": "Kifaransa",
+    "kinyarwanda": "Kinyarwanda",
+    "swahili": "Kiswahili"
+  },
+  "broadcast": {
+    "extreme": "KALI SANA",
+    "severe": "KALI",
+    "moderate": "WASTANI",
+    "advisory": "USHAURI",
+    "alertMessage": "UJUMBE WA TAHADHARI",
+    "affectedAreas": "Maeneo Yaliyoathiriwa",
+    "safetyInstructions": "Maelekezo ya Usalama",
+    "emergencyContacts": "Mawasiliano ya Dharura",
+    "expiresAt": "Tahadhari hii inaisha saa",
+    "iUnderstand": "Naelewa",
+    "acknowledged": "Tahadhari Imethibitishwa",
+    "closeBroadcast": "Funga Matangazo",
+    "dismiss": "Ondoa"
+  },
+  "splash": {
+    "tagline": "Majibu ya Dharura Mkononi Mwako"
+  }
+}

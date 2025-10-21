@@ -6,11 +6,11 @@ mobile app
 3. volume down listening
 4. phone storage to save emergency contacts [DONE]
 5. phone storage to save panic options [DONE]
-6. loud alert page [DONE]
-7. onBoarding, cool slides
-8. splash screen animation
-9. Emergency Broadcast screen
-10. Language changing
+6. loud alert page [DONE] || Haptics & vibrations [DONE]
+7. onBoarding, cool slides [DONE]
+8. splash screen animation [DONE]
+9. Emergency Broadcast screen [DONE]
+10. Language changing 
 
 Government Dashboard
 ====================
