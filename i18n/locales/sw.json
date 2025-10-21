@@ -16,7 +16,12 @@
     "error": "Hitilafu",
     "success": "Mafanikio",
     "warning": "Onyo",
-    "info": "Taarifa"
+    "info": "Taarifa",
+    "hello": "Habari!",
+    "help": "Msaada uko karibu tu!",
+    "click": "Bonyeza",
+    "call": "kupata msaada",
+    "volunteer": "Jitolee kusaidia"
   },
   "auth": {
     "signIn": "Ingia",
@@ -28,7 +33,13 @@
     "dontHaveAccount": "Huna akaunti?",
     "alreadyHaveAccount": "Tayari una akaunti?",
     "fullName": "Jina kamili",
-    "phoneNumber": "Nambari ya simu"
+    "phoneNumber": "Nambari ya simu",
+    "welcomeBack": "Karibu tena!",
+    "welcome": "Karibu",
+    "orContinueWith": "au endelea na",
+    "location": "Wilaya / Eneo",
+    "bloodType": "Aina ya Damu",
+    "changePhoto": "Badilisha Picha"
   },
   "onboarding": {
     "slide1": {
@@ -55,6 +66,24 @@
     "community": "Jamii",
     "profile": "Wasifu"
   },
+  "sos": {
+    "title": "DHARURA",
+    "you": "Zilizoripotiwa na Wewe",
+    "others": "Zilizoripotiwa na Wengine",
+    "reportedBy": "Imeripotiwa na",
+    "volunteer": "mjitoleaji",
+    "volunteers": "wajitoleaji"
+  },
+  "community": {
+    "title": "MACHAPISHO YA JAMII"
+  },
+  "profile": {
+    "title": "Wasifu",
+    "accountDetails": "Maelezo ya Akaunti",
+    "setupSoS": "Sanidi SoS",
+    "settings": "Mipangilio",
+    "about": "Kuhusu"
+  },
   "settings": {
     "title": "Mipangilio",
     "permissions": "Ruhusa",
@@ -65,6 +94,8 @@
     "cameraDescription": "Piga picha wakati wa dharura",
     "microphoneAccess": "Ufikiaji wa Kipaza Sauti",
     "microphoneDescription": "Rekodi sauti wakati wa dharura",
+    "panicButtonAccess": "Kitufe cha Dharura",
+    "panicButtonDescription": "Ufikiaji wa haraka kwa huduma za dharura",
     "notifications": "Arifa",
     "notificationsDescription": "Pokea tahadhari za dharura",
     "appPreferences": "Mapendeleo ya Programu",

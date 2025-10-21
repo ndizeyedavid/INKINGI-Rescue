@@ -147,7 +147,7 @@ export default function SetupSos() {
         {activeTab === "contacts" && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Emergency Contacts</Text>
+              <Text style={styles.sectionTitle}>{t("setupSos.contacts")}</Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/add-emergency-contact")}
@@ -156,7 +156,7 @@ export default function SetupSos() {
               </TouchableOpacity>
             </View>
             <Text style={styles.sectionSubtitle}>
-              Add trusted contacts to notify in emergencies
+              {t("setupSos.addTrustedContacts")}
             </Text>
 
             <View style={styles.contactsList}>
@@ -214,9 +214,9 @@ export default function SetupSos() {
         {/* Emergency Hotlines Section */}
         {activeTab === "hotlines" && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Emergency Hotlines</Text>
+            <Text style={styles.sectionTitle}>{t("setupSos.hotlines")}</Text>
             <Text style={styles.sectionSubtitle}>
-              Quick access to emergency services
+              {t("setupSos.hotlinesSubtitle")}
             </Text>
 
             <View style={styles.hotlinesList}>
@@ -252,7 +252,7 @@ export default function SetupSos() {
         {activeTab === "panic" && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Panic Buttons</Text>
+              <Text style={styles.sectionTitle}>{t("setupSos.panic")}</Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/setup-panic-button")}
@@ -261,7 +261,7 @@ export default function SetupSos() {
               </TouchableOpacity>
             </View>
             <Text style={styles.sectionSubtitle}>
-              Configure custom panic triggers for different emergencies
+              {t("setupSos.panicButtonsSubtitle")}
             </Text>
 
             <View style={styles.panicButtonsList}>

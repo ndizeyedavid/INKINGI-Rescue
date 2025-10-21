@@ -39,7 +39,8 @@
     "orContinueWith": "Cyangwa",
     "location": "Akarere / aho utuye",
     "bloodType": "Ubwoko bw' amaraso",
-    "changePhoto": "Guhindura ifoto"
+    "changePhoto": "Guhindura ifoto",
+    "editProfile": "Guhindura profile"
   },
   "onboarding": {
     "slide1": {
@@ -83,6 +84,18 @@
     "setupSoS": "Gushiraho SOS",
     "settings": "Settings",
     "about": "About"
+  },
+  "setupSos": {
+    "contacts": "Nimero zingenzi",
+    "panic": "Buto yihutirwa",
+    "addTrustedContacts": "Ongeraho nimero wizeye kugirango babone ubutumwa igihe uhuye n' ikibazo",
+    "hotlines": "Umurongo wa Leta",
+    "hotlinesSubtitle": "Bona byoroshye nimero zingenzi zubutabazi",
+    "panicButtonsSubtitle": "Shyiraho buto ushaka yihutirwa ku kibazo runaka"
+  },
+  "addEmergencyContact": {
+    "relationship": "Isano mufitanye",
+    "infoText": "Iyi nimero izajya imenyeshwa igihe utanze ikibazo cg usabye ubufasha mugihe cy' akaga. Wizere neza ko bazi ko wabahaye izi nshingano"
   },
   "settings": {
     "title": "Igenamiterere",

@@ -11,6 +11,10 @@ mobile app
 8. splash screen animation [DONE]
 9. Emergency Broadcast screen [DONE]
 10. Language changing 
+11. Backend setup
+12. backend integration😭
+13. OAUTH integration😭
+14. Functional Push Notifications
 
 Government Dashboard
 ====================
@@ -24,7 +28,8 @@ Government Dashboard
 SMS & USSD (Africas Talking)
 =============================
 
-1. Setup Africas Talking server
+1. Setup Africas Talking server [DONE]
 2. Integrate USSD endpoint
 3. Integrate SMS endpoint
 4. [BETA] Handle calls
+5. Translation for the USSD [DONE]

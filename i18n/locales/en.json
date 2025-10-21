@@ -39,7 +39,8 @@
     "orContinueWith": "or continue with",
     "location": "District / Location",
     "bloodType": "Blood Type",
-    "changePhoto": "Change Photo"
+    "changePhoto": "Change Photo",
+    "editProfile": "Edit Profile"
   },
   "onboarding": {
     "slide1": {
@@ -83,6 +84,18 @@
     "setupSoS": "Setup SoS",
     "settings": "Settings",
     "about": "About"
+  },
+  "setupSos": {
+    "contacts": "Emergency Contacts",
+    "panic": "Panic Buttons",
+    "addTrustedContacts": "Add trusted contacts to receive alerts when you're in an emergency",
+    "hotlines": "Emergency Hotlines",
+    "hotlinesSubtitle": "Quick access to important emergency numbers",
+    "panicButtonsSubtitle": "Configure custom panic buttons for specific emergencies"
+  },
+  "addEmergencyContact": {
+    "relationship": "Relationship",
+    "infoText": "This contact will be notified when you report an emergency or request help. Make sure they know they have this responsibility."
   },
   "settings": {
     "title": "Settings",

@@ -217,7 +217,7 @@ export default function AccountDetails() {
             onPress={handleEdit}
           >
             <Ionicons name="create-outline" size={20} color="#ffffff" />
-            <Text style={styles.editButtonText}>Edit Profile</Text>
+            <Text style={styles.editButtonText}>{t("auth.editProfile")}</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

@@ -1,7 +1,9 @@
 import CustomAlert from "@/components/CustomAlert";
+import { emergencyContactsStorage } from "@/utils/emergencyContactsStorage";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -10,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { emergencyContactsStorage } from "@/utils/emergencyContactsStorage";
 
 export default function AddEmergencyContact() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function AddEmergencyContact() {
   const [phone, setPhone] = useState("");
   const [relation, setRelation] = useState("");
   const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Alert states
   const [alertVisible, setAlertVisible] = useState(false);
@@ -97,11 +99,7 @@ export default function AddEmergencyContact() {
         }
       );
     } catch (error) {
-      showAlert(
-        "error",
-        "Error",
-        "Failed to save contact. Please try again."
-      );
+      showAlert("error", "Error", "Failed to save contact. Please try again.");
     }
   };
 
@@ -121,12 +119,12 @@ export default function AddEmergencyContact() {
 
         {/* Name Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Full Name *</Text>
+          <Text style={styles.inputLabel}>{t("auth.fullName")} *</Text>
           <View style={styles.inputContainer}>
             <Ionicons name="person-outline" size={20} color="#999999" />
             <TextInput
               style={styles.input}
-              placeholder="Enter contact name"
+              placeholder={t("auth.fullName")}
               placeholderTextColor="#999999"
               value={name}
               onChangeText={setName}
@@ -136,7 +134,7 @@ export default function AddEmergencyContact() {
 
         {/* Phone Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Phone Number *</Text>
+          <Text style={styles.inputLabel}>{t("auth.phoneNumber")}</Text>
           <View style={styles.inputContainer}>
             <Ionicons name="call-outline" size={20} color="#999999" />
             <TextInput
@@ -152,7 +150,9 @@ export default function AddEmergencyContact() {
 
         {/* Relation Selection */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Relationship *</Text>
+          <Text style={styles.inputLabel}>
+            {t("addEmergencyContact.relationship")}
+          </Text>
           <View style={styles.relationsGrid}>
             {relations.map((rel) => (
               <TouchableOpacity
@@ -206,8 +206,7 @@ export default function AddEmergencyContact() {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={20} color="#e6491e" />
           <Text style={styles.infoText}>
-            This contact will be notified automatically when you trigger an SOS
-            alert. Make sure they're aware of this responsibility.
+            {t("addEmergencyContact.infoText")}
           </Text>
         </View>
       </ScrollView>

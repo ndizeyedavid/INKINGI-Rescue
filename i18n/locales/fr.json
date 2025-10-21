@@ -16,7 +16,12 @@
     "error": "Erreur",
     "success": "Succès",
     "warning": "Avertissement",
-    "info": "Info"
+    "info": "Info",
+    "hello": "Salut!",
+    "help": "L'aide est à portée de clic!",
+    "click": "Cliquez",
+    "call": "pour appeler à l'aide",
+    "volunteer": "Portez-vous volontaire pour aider"
   },
   "auth": {
     "signIn": "Se connecter",
@@ -28,7 +33,13 @@
     "dontHaveAccount": "Vous n'avez pas de compte?",
     "alreadyHaveAccount": "Vous avez déjà un compte?",
     "fullName": "Nom complet",
-    "phoneNumber": "Numéro de téléphone"
+    "phoneNumber": "Numéro de téléphone",
+    "welcomeBack": "Bon retour!",
+    "welcome": "Bienvenue",
+    "orContinueWith": "ou continuer avec",
+    "location": "District / Localisation",
+    "bloodType": "Groupe sanguin",
+    "changePhoto": "Changer la photo"
   },
   "onboarding": {
     "slide1": {
@@ -55,6 +66,24 @@
     "community": "Communauté",
     "profile": "Profil"
   },
+  "sos": {
+    "title": "URGENCES",
+    "you": "Signalées par vous",
+    "others": "Signalées par d'autres",
+    "reportedBy": "Signalé par",
+    "volunteer": "bénévole",
+    "volunteers": "bénévoles"
+  },
+  "community": {
+    "title": "PUBLICATIONS COMMUNAUTAIRES"
+  },
+  "profile": {
+    "title": "Profil",
+    "accountDetails": "Détails du compte",
+    "setupSoS": "Configurer SoS",
+    "settings": "Paramètres",
+    "about": "À propos"
+  },
   "settings": {
     "title": "Paramètres",
     "permissions": "Autorisations",
@@ -65,6 +94,8 @@
     "cameraDescription": "Prendre des photos pendant les urgences",
     "microphoneAccess": "Accès au microphone",
     "microphoneDescription": "Enregistrer l'audio pendant les urgences",
+    "panicButtonAccess": "Bouton panique",
+    "panicButtonDescription": "Accès rapide aux services d'urgence",
     "notifications": "Notifications",
     "notificationsDescription": "Recevoir des alertes d'urgence",
     "appPreferences": "Préférences de l'application",
