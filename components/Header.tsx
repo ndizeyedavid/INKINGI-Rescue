@@ -1,14 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Header() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.headerContainer}>
       <View className="ml-4">
-        <Text>Hey!</Text>
+        <Text>{t("common.hello")}</Text>
         <Text style={styles.headerText}>MELLOW JUNIOR</Text>
       </View>
 

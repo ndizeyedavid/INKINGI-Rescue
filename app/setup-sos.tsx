@@ -6,6 +6,7 @@ import { PanicButton, panicButtonsStorage } from "@/utils/panicButtonsStorage";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Linking,
   ScrollView,
@@ -27,6 +28,8 @@ export default function SetupSos() {
   const [panicButtons, setPanicButtons] = useState<PanicButton[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingButtons, setIsLoadingButtons] = useState(true);
+
+  const { t } = useTranslation();
 
   const handleCall = (phoneNumber: string) => {
     const phoneUrl = `tel:${phoneNumber}`;

@@ -41,8 +41,8 @@ export default function Splash() {
       setTimeout(() => {
         if (hasSeenOnboarding === "true") {
           // User has seen onboarding, go to sign-in
-          // router.replace("/(tabs)");
-          router.replace("/onboarding");
+          router.replace("/(tabs)");
+          // router.replace("/onboarding");
         } else {
           // First time user, show onboarding
           router.replace("/onboarding");

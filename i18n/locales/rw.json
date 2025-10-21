@@ -16,7 +16,12 @@
     "error": "Ikosa",
     "success": "Byagenze neza",
     "warning": "Iburira",
-    "info": "Amakuru"
+    "info": "Amakuru",
+    "hello": "Mwaramutse!",
+    "help": "Ubufasha buri buto imbere yawe",
+    "click": "Kanda",
+    "call": "kugirango uhampagare ubufasha",
+    "volunteer": "Witange gufasha"
   },
   "auth": {
     "signIn": "Kwinjira",
@@ -31,7 +36,10 @@
     "phoneNumber": "Nimero ya telefoni",
     "welcomeBack": "Urakaze neza nanone!",
     "welcome": "Urakaze neza",
-    "orContinueWith": "Cyangwa"
+    "orContinueWith": "Cyangwa",
+    "location": "Akarere / aho utuye",
+    "bloodType": "Ubwoko bw' amaraso",
+    "changePhoto": "Guhindura ifoto"
   },
   "onboarding": {
     "slide1": {
@@ -55,8 +63,26 @@
     "home": "Ahabanza",
     "sos": "SOS",
     "map": "Ikarita",
-    "community": "Abaturage",
-    "profile": "Umwirondoro"
+    "community": "Inkuru",
+    "profile": "Profile"
+  },
+  "sos": {
+    "title": "IBIREGO BYIHUTIRWA",
+    "you": "Ibirego Byange",
+    "others": "Ibirego By'Abandi",
+    "reportedBy": "Byarezwe na",
+    "volunteer": "Ufasha",
+    "volunteers": "Abafasha"
+  },
+  "community": {
+    "title": "URUBUGA RW' ABATURAGE"
+  },
+  "profile": {
+    "title": "Profile",
+    "accountDetails": "Imyirondoro Yawe",
+    "setupSoS": "Gushiraho SOS",
+    "settings": "Settings",
+    "about": "About"
   },
   "settings": {
     "title": "Igenamiterere",

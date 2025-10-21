@@ -2,15 +2,17 @@ import CommunityPostCard from "@/components/CommunityPostCard";
 import PageHeader from "@/components/pageHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CommunityPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Community Posts" />
+      <PageHeader title={t("community.title")} />
 
       <ScrollView
         style={styles.scrollView}

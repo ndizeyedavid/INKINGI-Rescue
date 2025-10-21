@@ -1,5 +1,6 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type EmergencyStatus = "reported" | "dispatched" | "resolved";
@@ -32,6 +33,7 @@ export default function EmergencyCard({
   onFlagAsSpam,
 }: IEmergencyCard) {
   const [showMenu, setShowMenu] = useState(false);
+  const { t } = useTranslation();
   const getStatusColor = () => {
     switch (status) {
       case "reported":
@@ -110,7 +112,7 @@ export default function EmergencyCard({
             <Ionicons name="people-outline" size={16} color="#999999" />
             <Text style={styles.footerText}>
               {volunteersCount}{" "}
-              {volunteersCount === 1 ? "volunteer" : "volunteers"}
+              {volunteersCount === 1 ? t("sos.volunteer") : t("sos.volunteers")}
             </Text>
           </View>
         </View>
@@ -122,7 +124,7 @@ export default function EmergencyCard({
               </Text>
             </View>
             <View style={styles.reporterInfo}>
-              <Text style={styles.reporterLabel}>Reported by</Text>
+              <Text style={styles.reporterLabel}>{t("sos.reportedBy")}</Text>
               <Text style={styles.reporterName}>{reportedBy}</Text>
             </View>
           </View>

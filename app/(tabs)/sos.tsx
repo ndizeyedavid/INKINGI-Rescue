@@ -2,6 +2,7 @@ import EmergencyCard from "@/components/EmergencyCard";
 import PageHeader from "@/components/pageHeader";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -14,10 +15,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function SosPage() {
   const [activeTab, setActiveTab] = useState<"you" | "others">("you");
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Emergencies" />
+      <PageHeader title={t("sos.title")} />
 
       {/* Pills Navigation */}
       <View style={styles.pillsContainer}>
@@ -32,7 +34,7 @@ export default function SosPage() {
               activeTab === "you" && styles.activePillText,
             ]}
           >
-            Reported By You
+            {t("sos.you")}
           </Text>
         </TouchableOpacity>
 
@@ -47,7 +49,7 @@ export default function SosPage() {
               activeTab === "others" && styles.activePillText,
             ]}
           >
-            Reported By Others
+            {t("sos.others")}
           </Text>
         </TouchableOpacity>
       </View>
