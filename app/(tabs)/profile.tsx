@@ -1,13 +1,17 @@
 import PageHeader from "@/components/pageHeader";
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { signOut, user } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuItems = [
     {
       title: t("profile.accountDetails"),
@@ -36,8 +40,34 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    console.log("Logout pressed");
-    // Add logout logic here
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setIsLoggingOut(true);
+              await signOut();
+              // Navigate to sign-in screen
+              router.replace("/(auth)/sign-in");
+            } catch (error: any) {
+              console.error("Logout error:", error);
+              Alert.alert("Error", "Failed to logout. Please try again.");
+            } finally {
+              setIsLoggingOut(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -68,8 +98,11 @@ export default function ProfilePage() {
           style={styles.logoutButton}
           activeOpacity={0.8}
           onPress={handleLogout}
+          disabled={isLoggingOut}
         >
-          <Text style={styles.logoutButtonText}>Logout</Text>
+          <Text style={styles.logoutButtonText}>
+            {isLoggingOut ? "Logging out..." : "Logout"}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,9 +1,21 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Camera as ExpoCamera } from 'expo-camera';
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Camera() {
   const { t } = useTranslation();
+  const [permissionStatus, setPermissionStatus] = useState<string>('pending');
+
+  useEffect(() => {
+    checkPermission();
+  }, []);
+
+  const checkPermission = async () => {
+    const { status } = await ExpoCamera.getCameraPermissionsAsync();
+    setPermissionStatus(status);
+  };
   return (
     <View className="flex-row items-center justify-center gap-2 px-4">
       {/* icon here */}

@@ -22,23 +22,46 @@ export default function SignUpScreen() {
   const handleSignUp = async (
     name: string,
     email: string,
-    password: string
+    password: string,
+    phoneNumber?: string
   ) => {
+    // Validate inputs
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      Alert.alert(t('common.error'), "Please fill in all required fields");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert(t('common.error'), "Please enter a valid email address");
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      Alert.alert(t('common.error'), "Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
     try {
-      await signUp(name, email, password);
-      // Navigate to main app
-      router.replace("/");
-    } catch (error) {
-      Alert.alert("Error", "Failed to create account. Please try again.");
+      const result = await signUp(name, email, password, phoneNumber);
+      
+      if (result.success) {
+        // Navigate to permission screen
+        router.replace("/(auth)/Permission");
+      } else {
+        // Show user-friendly error message
+        Alert.alert('Registration Failed', result.error || "Failed to create account. Please try again.");
+      }
+    } catch (error: any) {
+      // Catch any unexpected errors and show alert instead of crashing
+      console.error('Sign up error:', error);
+      Alert.alert('Error', error.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSignIn = () => {
-    // Navigate to sign in screen
-    router.push("/(auth)/sign-in");
   };
 
   return (

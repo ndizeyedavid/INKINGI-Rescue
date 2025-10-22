@@ -17,6 +17,7 @@ const SignInForm: React.FC<SignInFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { t } = useTranslation();
+  
   const handleSignIn = () => {
     onSignIn(email, password);
   };
@@ -29,6 +30,8 @@ const SignInForm: React.FC<SignInFormProps> = ({
           icon="mail-outline"
           placeholder={t("auth.email")}
           keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
         />
         <FormInput
           label="Password"
@@ -36,17 +39,24 @@ const SignInForm: React.FC<SignInFormProps> = ({
           placeholder={t("auth.password")}
           keyboardType="default"
           secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
         />
       </View>
 
       <View className="items-end w-full mt-[14px]">
-        <Link href="/" className="text-[#E6491E] font-bold active:opacity-90">
+        <Link
+          href="/(auth)/sign-in"
+          className="text-[#E6491E] font-bold active:opacity-90"
+        >
           {t("auth.forgotPassword")}
         </Link>
       </View>
 
       <View>
-        <Button onPress={handleSignIn}>{t("auth.signIn")}</Button>
+        <Button onPress={handleSignIn} disabled={loading}>
+          {loading ? t('common.loading') : t("auth.signIn")}
+        </Button>
       </View>
 
       <View className="mt-[22px] ">

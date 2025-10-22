@@ -14,6 +14,8 @@ interface IFormInput {
     | "number-pad"
     | "visible-password";
   secureTextEntry?: boolean;
+  value?: string;
+  onChangeText?: (text: string) => void;
 }
 
 export default function FormInput({
@@ -22,6 +24,8 @@ export default function FormInput({
   icon,
   keyboardType,
   secureTextEntry = false,
+  value,
+  onChangeText,
 }: IFormInput) {
   return (
     <View className="gap-2">
@@ -35,6 +39,8 @@ export default function FormInput({
           placeholderTextColor={"rgba(0,0,0,0.3)"}
           keyboardType={keyboardType}
           secureTextEntry={secureTextEntry}
+          value={value}
+          onChangeText={onChangeText}
         />
       </View>
     </View>

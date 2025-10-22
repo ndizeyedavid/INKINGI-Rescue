@@ -1,18 +1,29 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { authApi, userApi } from '@/services/api';
+import { USE_MOCK_AUTH } from '@/config/api.config';
+import { mockAuthService } from '@/services/api/mockAuth.service';
 
 interface User {
   id: string;
   name: string;
   email: string;
+  phoneNumber?: string;
+  location?: string;
+  bloodType?: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (name: string, email: string, password: string, phoneNumber?: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,67 +39,167 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuthState = async () => {
     try {
-      const token = await SecureStore.getItemAsync("userToken");
+      // Check for stored token
+      const token = await AsyncStorage.getItem("authToken");
+      
       if (token) {
-        // Here you would typically validate the token with your backend
-        // For now, we'll just set a mock user
-        setUser({
-          id: "1",
-          name: "John Doe",
-          email: "john@example.com",
-        });
+        // Validate token by fetching user profile
+        const response = USE_MOCK_AUTH
+          ? await mockAuthService.getProfile()
+          : await userApi.getProfile();
+        
+        if (response.success && response.data) {
+          setUser(response.data);
+        } else {
+          // Token is invalid, clear it
+          await clearAuthData();
+        }
       }
     } catch (error) {
       console.error("Error checking auth state:", error);
+      await clearAuthData();
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signIn = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // Use mock auth if enabled
+      const response = USE_MOCK_AUTH 
+        ? await mockAuthService.login(email, password)
+        : await authApi.login(email, password);
 
-    // Here you would typically:
-    // 1. Validate credentials with your backend
-    // 2. Receive a token
-    // 3. Store the token securely
+      if (response.success && response.data) {
+        const { token, refreshToken, user: userData } = response.data;
 
-    // For demo purposes, we'll just set a mock user
-    setUser({
-      id: "1",
-      name: "John Doe",
-      email: email,
-    });
+        // Store tokens securely
+        await AsyncStorage.setItem("authToken", token);
+        if (refreshToken) {
+          await AsyncStorage.setItem("refreshToken", refreshToken);
+        }
+        
+        // Store user data
+        await AsyncStorage.setItem("user", JSON.stringify(userData));
+        
+        // Update state
+        setUser(userData);
 
-    // Store token securely
-    await SecureStore.setItemAsync("userToken", "mock-token");
+        return { success: true };
+      } else {
+        return { 
+          success: false, 
+          error: response.error || "Invalid email or password" 
+        };
+      }
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      return { 
+        success: false, 
+        error: error.message || "Failed to sign in. Please try again." 
+      };
+    }
   };
 
-  const signUp = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const signUp = async (
+    name: string, 
+    email: string, 
+    password: string,
+    phoneNumber?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // Split name into firstName and lastName
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || firstName;
 
-    // Here you would typically:
-    // 1. Create user account with your backend
-    // 2. Receive a token
-    // 3. Store the token securely
+      // Use mock auth if enabled
+      const response = USE_MOCK_AUTH
+        ? await mockAuthService.register({ name, email, password, phoneNumber: phoneNumber || "" })
+        : await authApi.register({ 
+            firstName, 
+            lastName, 
+            email, 
+            password, 
+            phoneNumber: phoneNumber || "" 
+          });
 
-    // For demo purposes, we'll just set a mock user
-    setUser({
-      id: "1",
-      name: name,
-      email: email,
-    });
+      if (response.success && response.data) {
+        const { token, refreshToken, user: userData } = response.data;
 
-    // Store token securely
-    await SecureStore.setItemAsync("userToken", "mock-token");
+        // Store tokens securely
+        await AsyncStorage.setItem("authToken", token);
+        if (refreshToken) {
+          await AsyncStorage.setItem("refreshToken", refreshToken);
+        }
+        
+        // Store user data
+        await AsyncStorage.setItem("user", JSON.stringify(userData));
+        
+        // Update state
+        setUser(userData);
+
+        return { success: true };
+      } else {
+        return { 
+          success: false, 
+          error: response.error || "Failed to create account" 
+        };
+      }
+    } catch (error: any) {
+      console.error("Sign up error:", error);
+      return { 
+        success: false, 
+        error: error.message || "Failed to create account. Please try again." 
+      };
+    }
   };
 
   const signOut = async () => {
-    // Remove token from secure storage
-    await SecureStore.deleteItemAsync("userToken");
-    setUser(null);
+    try {
+      // Call logout API
+      if (!USE_MOCK_AUTH) {
+        await authApi.logout();
+      }
+    } catch (error) {
+      console.error("Logout API error:", error);
+    } finally {
+      // Clear local data regardless of API call result
+      await clearAuthData();
+      setUser(null);
+    }
+  };
+
+  const clearAuthData = async () => {
+    try {
+      await AsyncStorage.multiRemove(["authToken", "refreshToken", "user"]);
+    } catch (error) {
+      console.error("Error clearing auth data:", error);
+    }
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      // Update stored user data
+      AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const response = USE_MOCK_AUTH
+        ? await mockAuthService.getProfile()
+        : await userApi.getProfile();
+      
+      if (response.success && response.data) {
+        setUser(response.data);
+        await AsyncStorage.setItem("user", JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
   };
 
   return (
@@ -98,7 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        updateUser,
+        refreshUser,
         isLoading,
+        isAuthenticated: !!user,
       }}
     >
       {children}

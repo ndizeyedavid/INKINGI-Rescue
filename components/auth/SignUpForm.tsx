@@ -6,7 +6,7 @@ import Button from "../Button";
 import FormInput from "./FormInput";
 
 interface SignUpFormProps {
-  onSignUp: (name: string, email: string, password: string) => void;
+  onSignUp: (name: string, email: string, password: string, phoneNumber?: string) => void;
   loading?: boolean;
 }
 
@@ -18,9 +18,16 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const { t } = useTranslation();
+  
   const handleSignUp = () => {
-    onSignUp(name, email, password);
+    // Validate password match
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    onSignUp(name, email, password, phoneNumber);
   };
 
   const isFormValid = () => {
@@ -90,12 +97,24 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
           icon="person-outline"
           placeholder="Your name"
           keyboardType="default"
+          value={name}
+          onChangeText={setName}
         />
         <FormInput
           label="Email"
           icon="mail-outline"
           placeholder={t("auth.email")}
           keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <FormInput
+          label={t("auth.phoneNumber")}
+          icon="call-outline"
+          placeholder={t("auth.phoneNumber")}
+          keyboardType="phone-pad"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
         />
         <FormInput
           label="Password"
@@ -103,6 +122,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
           placeholder={t("auth.password")}
           keyboardType="default"
           secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
         />
         <FormInput
           label={t("auth.confirmPassword")}
@@ -110,16 +131,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
           placeholder={t("auth.confirmPassword")}
           keyboardType="default"
           secureTextEntry={true}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         />
       </View>
 
       <View>
-        <Button>{t("auth.signUp")}</Button>
+        <Button onPress={handleSignUp} disabled={loading}>
+          {loading ? t('common.loading') : t("auth.signUp")}
+        </Button>
       </View>
 
       <View className="mt-[22px] ">
         <Text className="text-lg text-center text-black">
-          Already have an account?{" "}
+          {t("auth.alreadyHaveAccount")}{" "}
           <Link
             href="/(auth)/sign-in"
             className="text-[#E6491E] font-bold active:opacity-90"
