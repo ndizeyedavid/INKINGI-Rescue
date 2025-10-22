@@ -33,3 +33,15 @@ SMS & USSD (Africas Talking)
 3. Integrate SMS endpoint
 4. [BETA] Handle calls
 5. Translation for the USSD [DONE]
+
+BACKEND SERVER (Nest.Js)
+=========================
+
+1. setup nestJS [DONE]
+2. install prisma [DONE]
+3. configure prisma [DONE]
+4. connect prisma with mi db [DONE]
+5. create a db schema{progressive - step_by_step} [-dOnE]
+6. make AUTH functionalities [DONE]
+7. make SOS functionalities{report, view reports, flag report, volunteer}
+8. make community posts functionalities{fetch posts, create post, report post, delete post, comments and likes}

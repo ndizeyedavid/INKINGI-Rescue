@@ -1,28 +1,10 @@
 /** @type {import('tailwindcss').Config} */
-const { colors } = require('./src/constants/colors');
-
 module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-    "./app/**/*.{js,jsx,ts,tsx}",
-  ],
+  // NOTE: Update this to include the paths to all files that contain Nativewind classes.
+  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  presets: [require("nativewind/preset")],
   theme: {
-    extend: {
-      colors: {
-        background: colors.background,
-        text: colors.text,
-        primary: colors.primary,
-        primaryHover: colors.primaryHover,
-        border: colors.border,
-        textLight: colors.textLight,
-        statusBadgeBg: colors.statusBadgeBg,
-        statusBadgeText: colors.statusBadgeText,
-      },
-      borderRadius: {
-        'xl': '1rem', // 16px
-        '2xl': '1.5rem', // 24px
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
