@@ -259,6 +259,38 @@ export const emergencyApi = {
     ),
 };
 
+// Community Posts API
+export const postsApi = {
+  getAll: () => apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_POSTS),
+
+  getById: (id: string) =>
+    apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_POST_BY_ID, { id })),
+
+  create: (data: any) =>
+    apiService.post(API_CONFIG.ENDPOINTS.CREATE_POST, data),
+
+  update: (id: string, data: any) =>
+    apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.UPDATE_POST, { id }), data),
+
+  delete: (id: string) =>
+    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_POST, { id })),
+
+  like: (id: string) =>
+    apiService.post(buildUrl(API_CONFIG.ENDPOINTS.LIKE_POST, { id })),
+
+  unlike: (id: string) =>
+    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.UNLIKE_POST, { id })),
+
+  getComments: (id: string) =>
+    apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_POST_COMMENTS, { id })),
+
+  createComment: (id: string, data: { content: string }) =>
+    apiService.post(buildUrl(API_CONFIG.ENDPOINTS.CREATE_COMMENT, { id }), data),
+
+  deleteComment: (postId: string, commentId: string) =>
+    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_COMMENT, { postId, commentId })),
+};
+
 // Health API
 export const healthApi = {
   check: () => apiService.get(API_CONFIG.ENDPOINTS.HEALTH_CHECK),

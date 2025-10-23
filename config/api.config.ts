@@ -49,6 +49,20 @@ export const API_CONFIG = {
     ADD_EMERGENCY_UPDATE: "/emergency/:id/updates",
     VOLUNTEER_FOR_EMERGENCY: "/emergency/:id/volunteer",
     DELETE_VOLUNTEER: "/emergency/:emergencyId/volunteers/:volunteerId",
+
+    // Community Posts
+    GET_ALL_POSTS: "/posts",
+    GET_POST_BY_ID: "/posts/:id",
+    CREATE_POST: "/posts",
+    UPDATE_POST: "/posts/:id",
+    DELETE_POST: "/posts/:id",
+    LIKE_POST: "/posts/:id/like",
+    UNLIKE_POST: "/posts/:id/unlike",
+    
+    // Comments
+    GET_POST_COMMENTS: "/posts/:id/comments",
+    CREATE_COMMENT: "/posts/:id/comments",
+    DELETE_COMMENT: "/posts/:postId/comments/:commentId",
   },
 };
 
