@@ -33,12 +33,19 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
       
+      // Handle FormData - set appropriate content type
+      if (config.data instanceof FormData) {
+        if (config.headers) {
+          config.headers['Content-Type'] = 'multipart/form-data';
+        }
+      }
+      
       // Log request in development
       if (__DEV__) {
         console.log('📤 API Request:', {
           method: config.method?.toUpperCase(),
           url: config.url,
-          data: config.data,
+          data: config.data instanceof FormData ? 'FormData (multipart)' : config.data,
         });
       }
       

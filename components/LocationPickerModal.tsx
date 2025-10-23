@@ -15,10 +15,16 @@ import {
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 
+interface LocationData {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
 interface ILocationPickerModal {
   visible: boolean;
   onClose: () => void;
-  onSelectLocation: (location: string) => void;
+  onSelectLocation: (locationData: LocationData) => void;
   currentLocation: string;
 }
 
@@ -154,7 +160,11 @@ export default function LocationPickerModal({
   );
 
   const handleConfirm = () => {
-    onSelectLocation(selectedLocation);
+    onSelectLocation({
+      address: selectedLocation,
+      latitude: markerCoordinate.latitude,
+      longitude: markerCoordinate.longitude,
+    });
     onClose();
   };
 

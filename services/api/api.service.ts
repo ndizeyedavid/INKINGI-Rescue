@@ -1,10 +1,10 @@
-import { AxiosResponse } from 'axios';
-import axiosInstance from './axios.instance';
-import { API_CONFIG, buildUrl } from '@/config/api.config';
+import { API_CONFIG, buildUrl } from "@/config/api.config";
+import { AxiosResponse } from "axios";
+import axiosInstance from "./axios.instance";
 
 /**
  * API Service
- * 
+ *
  * This file provides a clean interface for making API calls.
  * All API requests should go through these methods.
  */
@@ -20,9 +20,14 @@ class ApiService {
   /**
    * Generic GET request
    */
-  async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async get<T = any>(
+    endpoint: string,
+    params?: Record<string, any>
+  ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await axiosInstance.get(endpoint, { params });
+      const response: AxiosResponse<T> = await axiosInstance.get(endpoint, {
+        params,
+      });
       return {
         success: true,
         data: response.data,
@@ -37,7 +42,10 @@ class ApiService {
    */
   async post<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await axiosInstance.post(endpoint, data);
+      const response: AxiosResponse<T> = await axiosInstance.post(
+        endpoint,
+        data
+      );
       return {
         success: true,
         data: response.data,
@@ -52,7 +60,10 @@ class ApiService {
    */
   async put<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await axiosInstance.put(endpoint, data);
+      const response: AxiosResponse<T> = await axiosInstance.put(
+        endpoint,
+        data
+      );
       return {
         success: true,
         data: response.data,
@@ -67,7 +78,10 @@ class ApiService {
    */
   async patch<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await axiosInstance.patch(endpoint, data);
+      const response: AxiosResponse<T> = await axiosInstance.patch(
+        endpoint,
+        data
+      );
       return {
         success: true,
         data: response.data,
@@ -95,13 +109,20 @@ class ApiService {
   /**
    * Upload file with FormData
    */
-  async upload<T = any>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+  async upload<T = any>(
+    endpoint: string,
+    formData: FormData
+  ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await axiosInstance.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response: AxiosResponse<T> = await axiosInstance.post(
+        endpoint,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return {
         success: true,
         data: response.data,
@@ -116,29 +137,29 @@ class ApiService {
    */
   private handleError(error: any): ApiResponse {
     // Handle array of error messages from backend validation
-    let message = 'An error occurred';
-    
+    let message = "An error occurred";
+
     if (error.response?.data?.message) {
       const errorMessage = error.response.data.message;
       // If it's an array of validation errors, join them
       if (Array.isArray(errorMessage)) {
-        message = errorMessage.join(', ');
+        message = errorMessage.join(", ");
       } else {
         message = errorMessage;
       }
     } else if (error.message) {
       message = error.message;
     }
-    
+
     // Log error for debugging but don't crash
     if (__DEV__) {
-      console.log('API Error handled:', {
+      console.log("API Error handled:", {
         status: error.response?.status,
         message,
         url: error.config?.url,
       });
     }
-    
+
     return {
       success: false,
       error: message,
@@ -154,73 +175,80 @@ export const apiService = new ApiService();
 export const authApi = {
   login: (email: string, password: string) =>
     apiService.post(API_CONFIG.ENDPOINTS.LOGIN, { email, password }),
-  
-  register: (data: { 
-    firstName?: string; 
-    lastName?: string; 
-    name?: string; 
-    email: string; 
-    password: string; 
-    phoneNumber: string 
-  }) =>
-    apiService.post(API_CONFIG.ENDPOINTS.REGISTER, data),
-  
-  logout: () =>
-    apiService.post(API_CONFIG.ENDPOINTS.LOGOUT),
+
+  register: (data: {
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email: string;
+    password: string;
+    phoneNumber: string;
+  }) => apiService.post(API_CONFIG.ENDPOINTS.REGISTER, data),
+
+  logout: () => apiService.post(API_CONFIG.ENDPOINTS.LOGOUT),
 };
 
 export const userApi = {
-  getAll: () =>
-    apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_USERS),
-  
+  getAll: () => apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_USERS),
+
   getById: (id: string) =>
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_USER_BY_ID, { id })),
-  
+
   // Get current authenticated user profile
-  getProfile: () =>
-    apiService.get(API_CONFIG.ENDPOINTS.GET_CURRENT_USER),
-  
+  getProfile: () => apiService.get(API_CONFIG.ENDPOINTS.GET_CURRENT_USER),
+
   update: (id: string, data: any) =>
     apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.UPDATE_USER, { id }), data),
-  
+
   delete: (id: string) =>
     apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_USER, { id })),
-  
+
   getStats: (id: string) =>
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_USER_STATS, { id })),
 };
 
 export const emergencyApi = {
   create: (data: any) =>
-    apiService.post(API_CONFIG.ENDPOINTS.CREATE_EMERGENCY, data),
-  
+    apiService.post(API_CONFIG.ENDPOINTS.CREATE_EMERGENCY_WITH_MEDIA, data),
+
   getAll: (params?: any) =>
     apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_EMERGENCIES, params),
-  
+
   getNearby: (params?: any) =>
     apiService.get(API_CONFIG.ENDPOINTS.GET_NEARBY_EMERGENCIES, params),
-  
+
   getById: (id: string) =>
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_EMERGENCY_BY_ID, { id })),
-  
+
   update: (id: string, data: any) =>
-    apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.UPDATE_EMERGENCY, { id }), data),
-  
+    apiService.patch(
+      buildUrl(API_CONFIG.ENDPOINTS.UPDATE_EMERGENCY, { id }),
+      data
+    ),
+
   delete: (id: string) =>
     apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_EMERGENCY, { id })),
-  
+
   updateStatus: (id: string, data: any) =>
-    apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.UPDATE_EMERGENCY_STATUS, { id }), data),
-  
+    apiService.patch(
+      buildUrl(API_CONFIG.ENDPOINTS.UPDATE_EMERGENCY_STATUS, { id }),
+      data
+    ),
+
   assignResponder: (id: string, data: any) =>
-    apiService.post(buildUrl(API_CONFIG.ENDPOINTS.ASSIGN_RESPONDER, { id }), data),
-  
+    apiService.post(
+      buildUrl(API_CONFIG.ENDPOINTS.ASSIGN_RESPONDER, { id }),
+      data
+    ),
+
   addUpdate: (id: string, data: any) =>
-    apiService.post(buildUrl(API_CONFIG.ENDPOINTS.ADD_EMERGENCY_UPDATE, { id }), data),
+    apiService.post(
+      buildUrl(API_CONFIG.ENDPOINTS.ADD_EMERGENCY_UPDATE, { id }),
+      data
+    ),
 };
 
 // Health API
 export const healthApi = {
-  check: () =>
-    apiService.get(API_CONFIG.ENDPOINTS.HEALTH_CHECK),
+  check: () => apiService.get(API_CONFIG.ENDPOINTS.HEALTH_CHECK),
 };

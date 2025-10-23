@@ -15,7 +15,7 @@ export const API_CONFIG = {
     ? "http://192.168.137.1:3000" // Local development server
     : "https://your-production-api.com", // Production server
 
-  TIMEOUT: 30000, // 30 seconds
+  TIMEOUT: 120000, // 2 minutes
 
   // API Endpoints
   ENDPOINTS: {
@@ -43,6 +43,7 @@ export const API_CONFIG = {
     GET_EMERGENCY_BY_ID: "/emergency/:id",
     UPDATE_EMERGENCY: "/emergency/:id",
     DELETE_EMERGENCY: "/emergency/:id",
+    CREATE_EMERGENCY_WITH_MEDIA: "/emergency/with-media",
     UPDATE_EMERGENCY_STATUS: "/emergency/:id/status",
     ASSIGN_RESPONDER: "/emergency/:id/assign",
     ADD_EMERGENCY_UPDATE: "/emergency/:id/updates",

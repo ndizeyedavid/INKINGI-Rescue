@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -6,12 +7,27 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 export default function Header() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Format user name - capitalize first letter of each word
+  const formatName = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  const displayName = user?.firstName && user?.lastName
+    ? formatName(`${user.firstName} ${user.lastName}`)
+    : user?.name
+    ? formatName(user.name)
+    : 'Guest';
 
   return (
     <View style={styles.headerContainer}>
       <View className="ml-4">
         <Text>{t("common.hello")}</Text>
-        <Text style={styles.headerText}>MELLOW JUNIOR</Text>
+        <Text style={styles.headerText}>{displayName.toUpperCase()}</Text>
       </View>
 
       <TouchableOpacity

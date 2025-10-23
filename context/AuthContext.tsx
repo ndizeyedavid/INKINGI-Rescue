@@ -7,7 +7,9 @@ import { mockAuthService } from '@/services/api/mockAuth.service';
 
 interface User {
   id: string;
-  name: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phoneNumber?: string;
   location?: string;
