@@ -195,14 +195,19 @@ export const userApi = {
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_USER_BY_ID, { id })),
 
   // Get current authenticated user profile
-  getProfile: () => apiService.get(API_CONFIG.ENDPOINTS.GET_CURRENT_USER),
+  getProfile: () => apiService.get(API_CONFIG.ENDPOINTS.GET_USER_PROFILE),
 
   update: (id: string, data: any) =>
     apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.UPDATE_USER, { id }), data),
 
+  updateProfile: (data: any) =>
+    apiService.patch(API_CONFIG.ENDPOINTS.UPDATE_USER_PROFILE, data),
+
+  uploadProfileImage: (formData: FormData) =>
+    apiService.post(API_CONFIG.ENDPOINTS.UPLOAD_PROFILE_IMAGE, formData),
+
   delete: (id: string) =>
     apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_USER, { id })),
-
   getStats: (id: string) =>
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_USER_STATS, { id })),
 };
@@ -290,6 +295,7 @@ export const postsApi = {
   deleteComment: (postId: string, commentId: string) =>
     apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_COMMENT, { postId, commentId })),
 };
+
 
 // Health API
 export const healthApi = {

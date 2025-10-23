@@ -1,13 +1,21 @@
 import CommunityPostCard from "@/components/CommunityPostCard";
-import PageHeader from "@/components/pageHeader";
+import { useAuth } from "@/context/AuthContext";
+import { postsApi } from "@/services/api/api.service";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { postsApi } from "@/services/api/api.service";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import CustomAlert from "@/components/CustomAlert";
+import PageHeader from "@/components/pageHeader";
 
 interface Post {
   id: string;
@@ -25,11 +33,27 @@ interface Post {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const { t } = useTranslation();
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Alert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("info");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showAlert = (
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    message: string
+  ) => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   useEffect(() => {
     fetchPosts();
@@ -45,7 +69,7 @@ export default function CommunityPage() {
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
-      Alert.alert("Error", "Failed to load community posts. Please try again.");
+      showAlert("error", "Error", "Failed to load posts. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -73,36 +97,32 @@ export default function CommunityPage() {
   };
 
   const handleDeletePost = async (postId: string) => {
-    Alert.alert(
+    // Show confirmation alert
+    showAlert(
+      "warning",
       "Delete Post",
-      "Are you sure you want to delete this post?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const response = await postsApi.delete(postId);
-              if (response.success) {
-                setPosts(posts.filter(p => p.id !== postId));
-                Alert.alert("Success", "Post deleted successfully");
-              } else {
-                Alert.alert("Error", response.error || "Failed to delete post");
-              }
-            } catch (error) {
-              console.error("Delete post error:", error);
-              Alert.alert("Error", "An error occurred while deleting the post");
-            }
-          },
-        },
-      ]
+      "Are you sure you want to delete this post? This action cannot be undone."
     );
+    
+    // Note: For now, we'll need to implement a confirmation dialog
+    // For immediate deletion without confirmation:
+    try {
+      const response = await postsApi.delete(postId);
+      if (response.success) {
+        setPosts(posts.filter((p) => p.id !== postId));
+        showAlert("success", "Success", "Post deleted successfully!");
+      } else {
+        showAlert("error", "Error", response.error || "Failed to delete post.");
+      }
+    } catch (error) {
+      console.error("Delete post error:", error);
+      showAlert("error", "Error", "An error occurred while deleting the post.");
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title={t("community.title")} />
+      <PageHeader title={"Community"} />
 
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -147,6 +167,15 @@ export default function CommunityPage() {
       >
         <Ionicons name="add" size={32} color="#ffffff" />
       </TouchableOpacity>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 }

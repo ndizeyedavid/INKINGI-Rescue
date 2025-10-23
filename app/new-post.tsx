@@ -6,7 +6,6 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomAlert from "@/components/CustomAlert";
 
 export default function NewPost() {
   const router = useRouter();
@@ -25,6 +25,26 @@ export default function NewPost() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Alert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("info");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertCallback, setAlertCallback] = useState<(() => void) | undefined>(undefined);
+
+  const showAlert = (
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    message: string,
+    callback?: () => void
+  ) => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertCallback(() => callback);
+    setAlertVisible(true);
+  };
   const [latitude, setLatitude] = useState(-1.9403);
   const [longitude, setLongitude] = useState(30.0619);
   const pickImage = async () => {
@@ -33,7 +53,8 @@ export default function NewPost() {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== "granted") {
-        Alert.alert(
+        showAlert(
+          "warning",
           "Permission Required",
           "Please grant camera roll permissions to upload images."
         );
@@ -52,7 +73,7 @@ export default function NewPost() {
       }
     } catch (error) {
       console.error("Image picker error:", error);
-      Alert.alert("Error", "Failed to pick image. Please try again.");
+      showAlert("error", "Error", "Failed to pick image. Please try again.");
     }
   };
 
@@ -62,12 +83,13 @@ export default function NewPost() {
 
   const validateForm = (): boolean => {
     if (!title.trim()) {
-      Alert.alert("Validation Error", "Please enter a title for your post.");
+      showAlert("warning", "Validation Error", "Please enter a title for your post.");
       return false;
     }
 
     if (title.trim().length < 5) {
-      Alert.alert(
+      showAlert(
+        "warning",
         "Validation Error",
         "Title must be at least 5 characters long."
       );
@@ -75,7 +97,8 @@ export default function NewPost() {
     }
 
     if (!description.trim()) {
-      Alert.alert(
+      showAlert(
+        "warning",
         "Validation Error",
         "Please enter a description for your post."
       );
@@ -83,7 +106,8 @@ export default function NewPost() {
     }
 
     if (description.trim().length < 10) {
-      Alert.alert(
+      showAlert(
+        "warning",
         "Validation Error",
         "Description must be at least 10 characters long."
       );
@@ -127,21 +151,23 @@ export default function NewPost() {
       const response = await postsApi.create(formData);
 
       if (response.success) {
-        Alert.alert("Success", "Your post has been published!", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+        showAlert(
+          "success",
+          "Success",
+          "Your post has been published!",
+          () => router.back()
+        );
       } else {
-        Alert.alert(
+        showAlert(
+          "error",
           "Error",
           response.error || "Failed to create post. Please try again."
         );
       }
     } catch (error) {
       console.error("Create post error:", error);
-      Alert.alert(
+      showAlert(
+        "error",
         "Error",
         "An error occurred while creating your post. Please try again."
       );
@@ -270,6 +296,26 @@ export default function NewPost() {
           setShowLocationModal(false);
         }}
         currentLocation={location}
+      />
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setAlertVisible(false);
+          if (alertCallback) {
+            alertCallback();
+          }
+        }}
+        onButtonPress={() => {
+          setAlertVisible(false);
+          if (alertCallback) {
+            alertCallback();
+          }
+        }}
       />
     </SafeAreaView>
   );

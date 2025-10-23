@@ -6,7 +6,6 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CustomAlert from "@/components/CustomAlert";
 
 interface Comment {
   id: string;
@@ -59,6 +59,23 @@ export default function PostDetail() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
 
+  // Alert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("info");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showAlert = (
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    message: string
+  ) => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
+
   useEffect(() => {
     if (postId) {
       fetchPostDetails();
@@ -91,7 +108,7 @@ export default function PostDetail() {
       }
     } catch (error) {
       console.error("Error fetching post:", error);
-      Alert.alert("Error", "Failed to load post details.");
+      showAlert("error", "Error", "Failed to load post details.");
     } finally {
       setLoading(false);
     }
@@ -163,11 +180,11 @@ export default function PostDetail() {
           setPost({ ...post, commentsCount: post.commentsCount + 1 });
         }
       } else {
-        Alert.alert("Error", response.error || "Failed to post comment.");
+        showAlert("error", "Error", response.error || "Failed to post comment.");
       }
     } catch (error) {
       console.error("Comment error:", error);
-      Alert.alert("Error", "An error occurred while posting your comment.");
+      showAlert("error", "Error", "An error occurred while posting your comment.");
     } finally {
       setIsSubmittingComment(false);
     }
@@ -216,11 +233,11 @@ export default function PostDetail() {
         // Revert on failure
         setIsLiked(previousLiked);
         setLikesCount(previousCount);
-        Alert.alert("Error", response.error || "Failed to update like.");
+        showAlert("error", "Error", response.error || "Failed to update like.");
       }
     } catch (error) {
       console.error("Like error:", error);
-      Alert.alert("Error", "An error occurred while updating like.");
+      showAlert("error", "Error", "An error occurred while updating like.");
     } finally {
       setIsTogglingLike(false);
     }
@@ -393,6 +410,13 @@ export default function PostDetail() {
           )}
         </TouchableOpacity>
       </View>
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

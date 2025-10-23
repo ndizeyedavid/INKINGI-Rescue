@@ -58,11 +58,16 @@ export const API_CONFIG = {
     DELETE_POST: "/posts/:id",
     LIKE_POST: "/posts/:id/like",
     UNLIKE_POST: "/posts/:id/unlike",
-    
+
     // Comments
     GET_POST_COMMENTS: "/posts/:id/comments",
     CREATE_COMMENT: "/posts/:id/comments",
     DELETE_COMMENT: "/posts/:postId/comments/:commentId",
+
+    // User Profile
+    GET_USER_PROFILE: "/auth/profile",
+    UPDATE_USER_PROFILE: "/auth/profile",
+    UPLOAD_PROFILE_IMAGE: "/auth/profile/image",
   },
 };
 
