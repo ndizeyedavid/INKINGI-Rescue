@@ -20,28 +20,37 @@ export default function SignInScreen() {
   const { t } = useTranslation();
 
   const handleSignIn = async (email: string, password: string) => {
+    // Validate inputs
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', "Please enter both email and password");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Invalid Email', "Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
     try {
-      await signIn(email, password);
-      // Navigate to main app
-      router.replace("/");
-    } catch (error) {
-      Alert.alert("Error", "Failed to sign in. Please try again.");
+      const result = await signIn(email, password);
+      
+      if (result.success) {
+        // Navigate to permission screen or main app
+        router.replace("/(auth)/Permission");
+      } else {
+        // Show user-friendly error message
+        Alert.alert('Login Failed', result.error || "Failed to sign in. Please check your credentials and try again.");
+      }
+    } catch (error: any) {
+      // Catch any unexpected errors and show alert instead of crashing
+      console.error('Sign in error:', error);
+      Alert.alert('Error', error.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleForgotPassword = () => {
-    // Navigate to forgot password screen
-    Alert.alert(
-      "Forgot Password",
-      "This would navigate to the forgot password screen."
-    );
-  };
-
-  const handleRedirect = () => {
-    router.push("/(auth)/Permission");
   };
 
   return (
@@ -61,7 +70,7 @@ export default function SignInScreen() {
               </Text>
             </View>
 
-            <SignInForm onSignIn={handleRedirect} loading={loading} />
+            <SignInForm onSignIn={handleSignIn} loading={loading} />
           </View>
         </ScrollView>
       </SafeAreaView>

@@ -1,4 +1,4 @@
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -88,7 +88,7 @@ export default function EmergencyCard({
       {/* Emergency Icon and Type */}
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <FontAwesome5 name={icon} size={32} color="#ffffff" />
+          <FontAwesome6 name={icon} size={32} color="#ffffff" />
         </View>
 
         <View style={styles.details}>

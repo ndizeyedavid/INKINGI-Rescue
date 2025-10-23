@@ -1,9 +1,29 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as ExpoLocation from 'expo-location';
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function Location() {
+interface LocationProps {
+  onPermissionGranted?: () => void;
+}
+
+export default function Location({ onPermissionGranted }: LocationProps) {
   const { t } = useTranslation();
+  const [permissionStatus, setPermissionStatus] = useState<string>('pending');
+
+  useEffect(() => {
+    checkPermission();
+  }, []);
+
+  const checkPermission = async () => {
+    const { status } = await ExpoLocation.getForegroundPermissionsAsync();
+    setPermissionStatus(status);
+    if (status === 'granted' && onPermissionGranted) {
+      onPermissionGranted();
+    }
+  };
+
   return (
     <View className="flex-row items-center justify-center gap-2 px-4">
       {/* icon here */}

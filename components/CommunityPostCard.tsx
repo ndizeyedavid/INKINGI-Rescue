@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ICommunityPostCard {
+  id?: string;
   author: string;
   date: string;
   title: string;
@@ -12,6 +13,7 @@ interface ICommunityPostCard {
 }
 
 export default function CommunityPostCard({
+  id,
   author,
   date,
   title,
@@ -25,7 +27,10 @@ export default function CommunityPostCard({
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.95}
-      onPress={() => router.push("/post-detail")}
+      onPress={() => router.push({
+        pathname: "/post-detail",
+        params: { postId: id }
+      })}
     >
       {/* Header */}
       <View style={styles.header}>

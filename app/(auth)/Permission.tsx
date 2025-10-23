@@ -3,8 +3,9 @@ import Camera from "@/components/Permissions/Camera";
 import Location from "@/components/Permissions/Location";
 import Microphone from "@/components/Permissions/Microphone";
 import PanicButton from "@/components/Permissions/PanicButton";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   StyleSheet,
@@ -20,15 +21,62 @@ export default function PermissionScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const { 
+    requestLocationPermission, 
+    requestCameraPermission, 
+    requestMicrophonePermission,
+    checkLocationPermission,
+    checkCameraPermission,
+    checkMicrophonePermission,
+    isRequesting 
+  } = usePermissions();
+
+  // Check if all permissions are already granted on mount
+  useEffect(() => {
+    checkAllPermissions();
+  }, []);
+
+  const checkAllPermissions = async () => {
+    const location = await checkLocationPermission();
+    const camera = await checkCameraPermission();
+    const microphone = await checkMicrophonePermission();
+
+    // If all permissions are granted, skip to main app
+    if (location && camera && microphone) {
+      router.replace("/(tabs)");
+    }
+  };
 
   const permissionComponents = [
-    { component: <Location />, key: "location" },
-    { component: <Camera />, key: "camera" },
-    { component: <Microphone />, key: "microphone" },
-    { component: <PanicButton />, key: "panic" },
+    { component: <Location />, key: "location", request: requestLocationPermission },
+    { component: <Camera />, key: "camera", request: requestCameraPermission },
+    { component: <Microphone />, key: "microphone", request: requestMicrophonePermission },
+    { component: <PanicButton />, key: "panic", request: null },
   ];
 
-  const handleAllow = () => {
+  const handleAllow = async () => {
+    const currentPermission = permissionComponents[currentIndex];
+    
+    // Request permission if there's a request function
+    if (currentPermission.request) {
+      const granted = await currentPermission.request();
+      if (!granted) {
+        // Permission denied, but still allow user to continue
+        console.log(`${currentPermission.key} permission denied`);
+      }
+    }
+
+    // After requesting permission, check if all are now granted
+    const location = await checkLocationPermission();
+    const camera = await checkCameraPermission();
+    const microphone = await checkMicrophonePermission();
+
+    // If all permissions are granted, skip to main app
+    if (location && camera && microphone) {
+      router.replace("/(tabs)");
+      return;
+    }
+
     if (currentIndex < permissionComponents.length - 1) {
       // Fade out current component
       Animated.parallel([
@@ -93,11 +141,16 @@ export default function PermissionScreen() {
           <Button
             className="w-full"
             onPress={currentIndex != 3 ? handleAllow : handleNavigate}
+            disabled={isRequesting}
           >
-            {currentIndex == 3 ? "Finish" : "Allow"}
+            {isRequesting ? "Requesting..." : currentIndex == 3 ? "Finish" : "Allow"}
           </Button>
-          <TouchableOpacity className="items-center w-full">
-            <Text>Skip for now</Text>
+          <TouchableOpacity 
+            className="items-center w-full"
+            onPress={currentIndex != 3 ? handleAllow : handleNavigate}
+            disabled={isRequesting}
+          >
+            <Text style={{ opacity: isRequesting ? 0.5 : 1 }}>Skip for now</Text>
           </TouchableOpacity>
         </View>
       </View>

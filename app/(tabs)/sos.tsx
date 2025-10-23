@@ -1,9 +1,13 @@
 import EmergencyCard from "@/components/EmergencyCard";
 import PageHeader from "@/components/pageHeader";
+import { useAuth } from "@/context/AuthContext";
+import { emergencyApi } from "@/services/api/api.service";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,10 +16,119 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+interface Emergency {
+  id: string;
+  type: string;
+  description: string;
+  address: string;
+  status: "reported" | "dispatched" | "resolved";
+  latitude: number;
+  longitude: number;
+  createdAt: string;
+  user?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+  };
+  volunteers?: any[];
+}
+
 export default function SosPage() {
   const [activeTab, setActiveTab] = useState<"you" | "others">("you");
   const router = useRouter();
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const [myEmergencies, setMyEmergencies] = useState<Emergency[]>([]);
+  const [otherEmergencies, setOtherEmergencies] = useState<Emergency[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchEmergencies();
+  }, []);
+
+  const fetchEmergencies = async () => {
+    try {
+      setError(null);
+      const response = await emergencyApi.getAll();
+
+      if (response.success && response.data) {
+        const emergencies = Array.isArray(response.data) ? response.data : [];
+
+        // Separate emergencies into "mine" and "others"
+        const mine = emergencies.filter(
+          (e: Emergency) => e.user?.id === user?.id
+        );
+        const others = emergencies.filter(
+          (e: Emergency) => e.user?.id !== user?.id
+        );
+
+        setMyEmergencies(mine);
+        setOtherEmergencies(others);
+      } else {
+        setError(response.error || "Failed to fetch emergencies");
+      }
+    } catch (err: any) {
+      console.error("Error fetching emergencies:", err);
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchEmergencies();
+  };
+
+  const handleDeleteEmergency = async (id: string) => {
+    try {
+      const response = await emergencyApi.delete(id);
+      if (response.success) {
+        // Remove from local state
+        setMyEmergencies((prev) => prev.filter((e) => e.id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting emergency:", err);
+    }
+  };
+
+  const getEmergencyIcon = (type: string): string => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("medical")) return "hand-holding-heart";
+    if (lowerType.includes("fire")) return "fire";
+    if (lowerType.includes("accident")) return "car-burst";
+    if (lowerType.includes("flood")) return "house-flood-water";
+    if (lowerType.includes("quake")) return "house-crack";
+    if (lowerType.includes("robbery")) return "people-robbery";
+    if (lowerType.includes("assault")) return "user-injured";
+    return "ellipsis";
+  };
+
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  const getUserName = (emergency: Emergency): string => {
+    if (emergency.user?.firstName && emergency.user?.lastName) {
+      return `${emergency.user.firstName} ${emergency.user.lastName}`;
+    }
+    return emergency.user?.name || "Anonymous";
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,45 +168,102 @@ export default function SosPage() {
       </View>
 
       {/* Content Area */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {activeTab === "you" ? (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() =>
-              router.push({
-                pathname: "/view-sos",
-                params: { emergencyType: "Road Accident" },
-              })
-            }
-          >
-            <EmergencyCard
-              location="Kimisagara, KK 301"
-              icon="car-crash"
-              type="Road Accident"
-              description="The incident involved the vehicle RAH 331, which was involved in a collision between a car and a motorcycle. The accident resulted in a serious head injury for the biker. Urgent emergency services are needed at this location."
-              isMine={true}
-              onDelete={() => console.log("Delete emergency")}
-              status="reported"
-            />
-          </TouchableOpacity>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {loading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color="#e6491e" />
+            <Text style={styles.emptyText}>Loading emergencies...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>{error}</Text>
+            <TouchableOpacity
+              onPress={fetchEmergencies}
+              style={{ marginTop: 10 }}
+            >
+              <Text style={{ color: "#e6491e", fontWeight: "600" }}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : activeTab === "you" ? (
+          myEmergencies.length > 0 ? (
+            myEmergencies.map((emergency) => (
+              <TouchableOpacity
+                key={emergency.id}
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({
+                    pathname: "/view-sos",
+                    params: {
+                      emergencyId: emergency.id,
+                      emergencyType: emergency.type,
+                    },
+                  })
+                }
+              >
+                <EmergencyCard
+                  location={
+                    emergency.address ||
+                    emergency.latitude + ", " + emergency.longitude
+                  }
+                  icon={getEmergencyIcon(emergency.type)}
+                  type={emergency.type}
+                  description={emergency.description}
+                  isMine={true}
+                  onDelete={() => handleDeleteEmergency(emergency.id)}
+                  status={emergency.status}
+                  timeReported={formatTimeAgo(emergency.createdAt)}
+                  volunteersCount={emergency.volunteers?.length || 0}
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>
+                No emergencies reported by you
+              </Text>
+            </View>
+          )
+        ) : otherEmergencies.length > 0 ? (
+          otherEmergencies.map((emergency) => (
+            <TouchableOpacity
+              key={emergency.id}
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push({
+                  pathname: "/view-sos",
+                  params: {
+                    emergencyId: emergency.id,
+                    emergencyType: emergency.type,
+                  },
+                })
+              }
+            >
+              <EmergencyCard
+                location={
+                  emergency.address ||
+                  emergency.latitude + ", " + emergency.longitude
+                }
+                icon={getEmergencyIcon(emergency.type)}
+                type={emergency.type}
+                description={emergency.description}
+                reportedBy={getUserName(emergency)}
+                status={emergency.status}
+                timeReported={formatTimeAgo(emergency.createdAt)}
+                volunteersCount={emergency.volunteers?.length || 0}
+              />
+            </TouchableOpacity>
+          ))
         ) : (
-          <View>
-            <EmergencyCard
-              location="Kimisagara, KK 301"
-              icon="hand-holding-heart"
-              type="Medical Emergency"
-              description="I am having a stork please send help asap."
-              onDelete={() => console.log("Delete emergency")}
-              reportedBy="mellow"
-            />
-            <EmergencyCard
-              location="Kimisagara, KK 301"
-              icon="fire"
-              type="Fire Emergency"
-              description="later butter owner easy expect barn market fireplace person important interior food public factory feet southern green complete may sight loose situation shelf supperI am having a stork please send help asap."
-              onDelete={() => console.log("Delete emergency")}
-              reportedBy="Jean Pierre"
-            />
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>
+              No emergencies reported by others
+            </Text>
           </View>
         )}
       </ScrollView>

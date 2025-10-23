@@ -1,5 +1,6 @@
 import "@/global.css";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import { useEffect, useRef } from "react";
@@ -10,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Splash() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { isAuthenticated, isLoading } = useAuth();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
@@ -31,19 +33,28 @@ export default function Splash() {
 
     // Check if user has seen onboarding
     checkOnboardingStatus();
-  }, []);
+  }, [isLoading, isAuthenticated]);
 
   const checkOnboardingStatus = async () => {
     try {
+      // Wait for auth context to finish loading
+      if (isLoading) {
+        return;
+      }
+
       const hasSeenOnboarding = await AsyncStorage.getItem("hasSeenOnboarding");
 
       // Wait for animation to complete
       setTimeout(() => {
         if (hasSeenOnboarding === "true") {
-          // User has seen onboarding, go to sign-in
-          // router.replace("/(tabs)");
-          // router.replace("/onboarding");
-          router.replace("/(auth)/sign-in");
+          // User has seen onboarding
+          if (isAuthenticated) {
+            // User is logged in, go to main app
+            router.replace("/(tabs)");
+          } else {
+            // User is not logged in, go to sign-in
+            router.replace("/(auth)/sign-in");
+          }
         } else {
           // First time user, show onboarding
           router.replace("/onboarding");
