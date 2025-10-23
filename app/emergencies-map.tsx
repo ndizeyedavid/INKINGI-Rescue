@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { emergencyApi } from "@/services/api/api.service";
 import {
   Alert,
   Animated,
@@ -21,14 +22,15 @@ import MapView, {
 } from "react-native-maps";
 
 interface EmergencyReport {
-  id: number;
-  type: "accident" | "fire" | "medical" | "flood" | "robbery" | "assault";
+  id: string;
+  type: string;
   latitude: number;
   longitude: number;
   title: string;
   description: string;
-  timestamp: string;
-  location: string;
+  createdAt: string;
+  address: string;
+  status: "reported" | "dispatched" | "resolved";
 }
 
 export default function EmergenciesMap() {
@@ -58,48 +60,8 @@ export default function EmergenciesMap() {
   const [routeDistance, setRouteDistance] = useState<number>(0);
   const [routeDuration, setRouteDuration] = useState<number>(0);
 
-  const [emergencies, setEmergencies] = useState<EmergencyReport[]>([
-    {
-      id: 1,
-      type: "fire",
-      latitude: -1.9506,
-      longitude: 30.0588,
-      title: "Fire Emergency",
-      description: "Building fire reported",
-      timestamp: "10 min ago",
-      location: "Kimironko, Kigali",
-    },
-    {
-      id: 2,
-      type: "accident",
-      latitude: -1.9395,
-      longitude: 30.0644,
-      title: "Car Accident",
-      description: "Multiple vehicles involved",
-      timestamp: "25 min ago",
-      location: "Remera, Kigali",
-    },
-    {
-      id: 3,
-      type: "medical",
-      latitude: -1.9478,
-      longitude: 30.0567,
-      title: "Medical Emergency",
-      description: "Person collapsed",
-      timestamp: "1 hour ago",
-      location: "Nyarugenge, Kigali",
-    },
-    {
-      id: 4,
-      type: "robbery",
-      latitude: -1.9423,
-      longitude: 30.0701,
-      title: "Robbery in Progress",
-      description: "Armed robbery at store",
-      timestamp: "5 min ago",
-      location: "Kicukiro, Kigali",
-    },
-  ]);
+  const [emergencies, setEmergencies] = useState<EmergencyReport[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -126,6 +88,9 @@ export default function EmergenciesMap() {
         },
         1000
       );
+
+      // Fetch emergencies from backend
+      await fetchEmergencies();
     })();
 
     return () => {
@@ -135,6 +100,36 @@ export default function EmergenciesMap() {
       }
     };
   }, []);
+
+  const fetchEmergencies = async () => {
+    try {
+      setLoading(true);
+      const response = await emergencyApi.getAll();
+      
+      if (response.success && response.data) {
+        setEmergencies(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching emergencies:", error);
+      Alert.alert("Error", "Failed to load emergencies. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  };
 
   const centerOnUser = async () => {
     try {
@@ -281,42 +276,28 @@ export default function EmergenciesMap() {
     },
   });
 
-  const getMarkerColor = (type: EmergencyReport["type"]) => {
-    switch (type) {
-      case "fire":
-        return "#ef4444";
-      case "accident":
-        return "#f59e0b";
-      case "medical":
-        return "#dc2626";
-      case "flood":
-        return "#3b82f6";
-      case "robbery":
-        return "#8b5cf6";
-      case "assault":
-        return "#ec4899";
-      default:
-        return "#6b7280";
-    }
+  const getMarkerColor = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("fire")) return "#ef4444";
+    if (lowerType.includes("accident")) return "#f59e0b";
+    if (lowerType.includes("medical")) return "#dc2626";
+    if (lowerType.includes("flood")) return "#3b82f6";
+    if (lowerType.includes("robbery")) return "#8b5cf6";
+    if (lowerType.includes("assault")) return "#ec4899";
+    if (lowerType.includes("quake")) return "#a855f7";
+    return "#6b7280";
   };
 
-  const getMarkerIcon = (type: EmergencyReport["type"]) => {
-    switch (type) {
-      case "fire":
-        return "flame";
-      case "accident":
-        return "car-sport";
-      case "medical":
-        return "medical";
-      case "flood":
-        return "water";
-      case "robbery":
-        return "bag";
-      case "assault":
-        return "warning";
-      default:
-        return "alert-circle";
-    }
+  const getMarkerIcon = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("fire")) return "flame";
+    if (lowerType.includes("accident")) return "car-sport";
+    if (lowerType.includes("medical")) return "medical";
+    if (lowerType.includes("flood")) return "water";
+    if (lowerType.includes("robbery")) return "bag";
+    if (lowerType.includes("assault")) return "warning";
+    if (lowerType.includes("quake")) return "home";
+    return "alert-circle";
   };
 
   const renderEmergencyItem = ({ item }: { item: EmergencyReport }) => (
@@ -346,9 +327,9 @@ export default function EmergenciesMap() {
       <View style={styles.emergencyInfo}>
         <Text style={styles.emergencyTitle}>{item.title}</Text>
         <Text style={styles.emergencyLocation} numberOfLines={1}>
-          {item.location}
+          {item.address}
         </Text>
-        <Text style={styles.emergencyTimestamp}>{item.timestamp}</Text>
+        <Text style={styles.emergencyTimestamp}>{formatTimeAgo(item.createdAt)}</Text>
       </View>
       <Ionicons name="navigate" size={20} color="#e6491e" />
     </TouchableOpacity>
@@ -410,7 +391,10 @@ export default function EmergenciesMap() {
                 color="#ffffff"
               />
             </View>
-            <Callout tooltip onPress={() => router.push("/view-sos")}>
+            <Callout tooltip onPress={() => router.push({
+              pathname: "/view-sos",
+              params: { emergencyId: emergency.id }
+            })}>
               <View style={styles.calloutContainer}>
                 <View style={styles.calloutHeader}>
                   <View
@@ -428,7 +412,7 @@ export default function EmergenciesMap() {
                   <View style={styles.calloutHeaderText}>
                     <Text style={styles.calloutTitle}>{emergency.title}</Text>
                     <Text style={styles.calloutTimestamp}>
-                      {emergency.timestamp}
+                      {formatTimeAgo(emergency.createdAt)}
                     </Text>
                   </View>
                 </View>
@@ -515,7 +499,10 @@ export default function EmergenciesMap() {
           </View>
           <TouchableOpacity
             style={styles.viewDetailsButtonSmall}
-            onPress={() => router.push("/view-sos")}
+            onPress={() => router.push({
+              pathname: "/view-sos",
+              params: { emergencyId: selectedEmergency.id }
+            })}
             activeOpacity={0.8}
           >
             <Text style={styles.viewDetailsTextSmall}>View Details</Text>
