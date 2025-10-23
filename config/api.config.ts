@@ -47,6 +47,8 @@ export const API_CONFIG = {
     UPDATE_EMERGENCY_STATUS: "/emergency/:id/status",
     ASSIGN_RESPONDER: "/emergency/:id/assign",
     ADD_EMERGENCY_UPDATE: "/emergency/:id/updates",
+    VOLUNTEER_FOR_EMERGENCY: "/emergency/:id/volunteer",
+    DELETE_VOLUNTEER: "/emergency/:emergencyId/volunteers/:volunteerId",
   },
 };
 

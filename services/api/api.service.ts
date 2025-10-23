@@ -246,6 +246,17 @@ export const emergencyApi = {
       buildUrl(API_CONFIG.ENDPOINTS.ADD_EMERGENCY_UPDATE, { id }),
       data
     ),
+
+  volunteer: (id: string, data: { message: string; skills: string }) =>
+    apiService.post(
+      buildUrl(API_CONFIG.ENDPOINTS.VOLUNTEER_FOR_EMERGENCY, { id }),
+      data
+    ),
+
+  deleteVolunteer: (emergencyId: string, volunteerId: string) =>
+    apiService.delete(
+      buildUrl(API_CONFIG.ENDPOINTS.DELETE_VOLUNTEER, { emergencyId, volunteerId })
+    ),
 };
 
 // Health API

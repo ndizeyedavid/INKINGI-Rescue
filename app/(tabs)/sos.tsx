@@ -31,7 +31,7 @@ interface Emergency {
     lastName?: string;
     name?: string;
   };
-  volunteersCount?: number;
+  volunteers?: any[];
 }
 
 export default function SosPage() {
@@ -218,7 +218,7 @@ export default function SosPage() {
                   onDelete={() => handleDeleteEmergency(emergency.id)}
                   status={emergency.status}
                   timeReported={formatTimeAgo(emergency.createdAt)}
-                  volunteersCount={emergency.volunteersCount || 0}
+                  volunteersCount={emergency.volunteers?.length || 0}
                 />
               </TouchableOpacity>
             ))
@@ -255,7 +255,7 @@ export default function SosPage() {
                 reportedBy={getUserName(emergency)}
                 status={emergency.status}
                 timeReported={formatTimeAgo(emergency.createdAt)}
-                volunteersCount={emergency.volunteersCount || 0}
+                volunteersCount={emergency.volunteers?.length || 0}
               />
             </TouchableOpacity>
           ))
