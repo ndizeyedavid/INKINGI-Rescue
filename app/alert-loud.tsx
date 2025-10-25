@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Brightness from "expo-brightness";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -14,16 +15,24 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { shakeEmergencyService } from "@/services/shakeEmergency.service";
 
 export default function AlertLoud() {
   const router = useRouter();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [originalBrightness, setOriginalBrightness] = useState<number>(0.5);
+  const [emergencySubmitted, setEmergencySubmitted] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(true);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const flashAnim = useRef(new Animated.Value(1)).current;
   const hapticInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cameraRef = useRef<any>(null);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   useEffect(() => {
+    // Initialize emergency flow
+    initializeEmergency();
+
     // Start pulsing animation
     Animated.loop(
       Animated.sequence([
@@ -76,6 +85,42 @@ export default function AlertLoud() {
       restoreBrightness();
     };
   }, []);
+
+  const initializeEmergency = async () => {
+    try {
+      console.log("🚨 SHAKE EMERGENCY DETECTED - Starting automatic emergency submission...");
+      
+      // Request camera permission if not granted
+      if (!cameraPermission?.granted) {
+        console.log("Requesting camera permission...");
+        const result = await requestCameraPermission();
+        console.log("Camera permission result:", result?.granted);
+        
+        // Wait a bit for camera to initialize after permission granted
+        if (result?.granted) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      // Execute shake emergency flow with camera ref
+      console.log("Camera ref available:", !!cameraRef.current);
+      const success = await shakeEmergencyService.executeShakeEmergency(
+        cameraRef.current
+      );
+
+      setEmergencySubmitted(success);
+      setIsProcessing(false);
+
+      if (success) {
+        console.log("✅ Emergency submitted successfully");
+      } else {
+        console.error("❌ Failed to submit emergency");
+      }
+    } catch (error) {
+      console.error("Error initializing emergency:", error);
+      setIsProcessing(false);
+    }
+  };
 
   const setBrightnessToMax = async () => {
     try {
@@ -214,12 +259,26 @@ export default function AlertLoud() {
           {/* Status Indicators */}
           <View style={styles.statusContainer}>
             <View style={styles.statusItem}>
-              <Ionicons name="notifications" size={32} color="#ffffff" />
-              <Text style={styles.statusText}>Contacts Notified</Text>
+              <Ionicons 
+                name={isProcessing ? "hourglass" : emergencySubmitted ? "checkmark-circle" : "close-circle"} 
+                size={32} 
+                color="#ffffff" 
+              />
+              <Text style={styles.statusText}>
+                {isProcessing ? "Submitting Emergency..." : emergencySubmitted ? "Emergency Submitted" : "Submission Failed"}
+              </Text>
             </View>
             <View style={styles.statusItem}>
               <Ionicons name="location" size={32} color="#ffffff" />
-              <Text style={styles.statusText}>Location Shared</Text>
+              <Text style={styles.statusText}>Location Captured</Text>
+            </View>
+            <View style={styles.statusItem}>
+              <Ionicons name="mic" size={32} color="#ffffff" />
+              <Text style={styles.statusText}>Audio Recorded (5s)</Text>
+            </View>
+            <View style={styles.statusItem}>
+              <Ionicons name="camera" size={32} color="#ffffff" />
+              <Text style={styles.statusText}>Photo Captured</Text>
             </View>
           </View>
 
@@ -227,12 +286,24 @@ export default function AlertLoud() {
           <View style={styles.infoContainer}>
             <Ionicons name="information-circle" size={24} color="#ffffff" />
             <Text style={styles.infoText}>
-              Your emergency contacts have been notified with your location.
-              Help is on the way.
+              {emergencySubmitted 
+                ? "Emergency data submitted successfully. Responders have been notified with your location, audio, and photo."
+                : "Collecting emergency data automatically. Your location, audio, and photo are being captured."}
             </Text>
           </View>
         </View>
       </ScrollView>
+
+      {/* Hidden Camera View for Photo Capture */}
+      {cameraPermission?.granted && (
+        <View style={styles.hiddenCamera}>
+          <CameraView
+            ref={cameraRef}
+            style={{ width: 1, height: 1 }}
+            facing="back"
+          />
+        </View>
+      )}
 
       {/* Stop Alert Button */}
       <View style={styles.footer}>
@@ -362,5 +433,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#e6491e",
+  },
+  hiddenCamera: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
+    overflow: "hidden",
   },
 });
