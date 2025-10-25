@@ -297,6 +297,20 @@ export const postsApi = {
 };
 
 
+// Notifications API
+export const notificationsApi = {
+  getAll: () => apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_NOTIFICATIONS),
+  
+  markAsRead: (id: string) =>
+    apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.MARK_NOTIFICATION_READ, { id })),
+  
+  markAllAsRead: () =>
+    apiService.patch(API_CONFIG.ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ),
+  
+  delete: (id: string) =>
+    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_NOTIFICATION, { id })),
+};
+
 // Health API
 export const healthApi = {
   check: () => apiService.get(API_CONFIG.ENDPOINTS.HEALTH_CHECK),

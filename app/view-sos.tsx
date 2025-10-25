@@ -1,18 +1,19 @@
+import VolunteerForm from "@/components/VolunteerForm";
+import { useAuth } from "@/context/AuthContext";
 import { emergencyApi } from "@/services/api/api.service";
+import { geminiService } from "@/services/gemini.service";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
-import { Audio, Video, ResizeMode } from "expo-av";
+import { Audio, ResizeMode, Video } from "expo-av";
 import * as Location from "expo-location";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import VolunteerForm from "@/components/VolunteerForm";
-import { geminiService } from "@/services/gemini.service";
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
   Image,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -119,6 +120,7 @@ export default function ViewSos() {
   const videoRef = useRef<Video>(null);
   const [aiTips, setAiTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Get volunteers from emergency data
   const volunteers = emergencyData?.volunteers || [];
@@ -142,7 +144,7 @@ export default function ViewSos() {
 
       if (response.success && response.data) {
         setEmergencyData(response.data);
-        
+
         // Check if current user has already volunteered
         if (user && response.data.volunteers) {
           const hasVolunteered = response.data.volunteers.some(
@@ -190,11 +192,18 @@ export default function ViewSos() {
         "Call emergency services (112) immediately if needed.",
         "Ensure your own safety before helping others.",
         "Follow instructions from emergency responders.",
-        "Keep emergency contacts readily available."
+        "Keep emergency contacts readily available.",
       ]);
     } finally {
       setLoadingTips(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEmergencyDetails();
+    await getUserLocation();
+    setRefreshing(false);
   };
 
   const showAlert = (
@@ -384,16 +393,18 @@ export default function ViewSos() {
 
   const getMediaByType = (type: "image" | "video" | "audio") => {
     // Check both media and mediaFiles for backward compatibility
-    const mediaFromNew = emergencyData?.media?.filter((file) => file.mediaType === type) || [];
-    const mediaFromOld = emergencyData?.mediaFiles?.filter((file) => file.type === type) || [];
-    
+    const mediaFromNew =
+      emergencyData?.media?.filter((file) => file.mediaType === type) || [];
+    const mediaFromOld =
+      emergencyData?.mediaFiles?.filter((file) => file.type === type) || [];
+
     // Convert new format to old format for consistency
-    const convertedMedia = mediaFromNew.map(m => ({
+    const convertedMedia = mediaFromNew.map((m) => ({
       id: m.id,
       url: m.mediaUrl,
-      type: m.mediaType
+      type: m.mediaType,
     }));
-    
+
     return [...convertedMedia, ...mediaFromOld];
   };
 
@@ -408,10 +419,10 @@ export default function ViewSos() {
       if (response.success) {
         setShowVolunteerFormModal(false);
         setIsVolunteered(true);
-        
+
         // Refresh emergency data to get updated volunteers list
         await fetchEmergencyDetails();
-        
+
         showAlert(
           "success",
           "Success!",
@@ -421,7 +432,8 @@ export default function ViewSos() {
         showAlert(
           "error",
           "Error",
-          response.error || "Failed to submit volunteer request. Please try again."
+          response.error ||
+            "Failed to submit volunteer request. Please try again."
         );
       }
     } catch (error) {
@@ -443,7 +455,7 @@ export default function ViewSos() {
         await audioSound.stopAsync();
         await audioSound.unloadAsync();
         setAudioSound(null);
-        
+
         // If clicking the same audio, just stop it
         if (playingAudio === audioId) {
           setPlayingAudio(null);
@@ -514,10 +526,10 @@ export default function ViewSos() {
 
               if (response.success) {
                 setIsVolunteered(false);
-                
+
                 // Refresh emergency data
                 await fetchEmergencyDetails();
-                
+
                 showAlert(
                   "success",
                   "Removed",
@@ -572,6 +584,14 @@ export default function ViewSos() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#ff6e21"]}
+            tintColor="#ff6e21"
+          />
+        }
       >
         {/* Emergency Icon */}
         <View style={styles.iconContainer}>
@@ -776,21 +796,25 @@ export default function ViewSos() {
                 key={file.id}
                 style={[
                   styles.audioButton,
-                  playingAudio === file.id && styles.audioButtonPlaying
+                  playingAudio === file.id && styles.audioButtonPlaying,
                 ]}
                 activeOpacity={0.7}
                 onPress={() => handlePlayAudio(file.url, file.id)}
               >
-                <Ionicons 
-                  name={playingAudio === file.id ? "stop" : "play"} 
-                  size={20} 
-                  color={playingAudio === file.id ? "#e6491e" : "#000000"} 
+                <Ionicons
+                  name={playingAudio === file.id ? "stop" : "play"}
+                  size={20}
+                  color={playingAudio === file.id ? "#e6491e" : "#000000"}
                 />
-                <Text style={[
-                  styles.audioText,
-                  playingAudio === file.id && styles.audioTextPlaying
-                ]}>
-                  {playingAudio === file.id ? "Playing..." : `Audio recording ${index + 1}`}
+                <Text
+                  style={[
+                    styles.audioText,
+                    playingAudio === file.id && styles.audioTextPlaying,
+                  ]}
+                >
+                  {playingAudio === file.id
+                    ? "Playing..."
+                    : `Audio recording ${index + 1}`}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -801,9 +825,7 @@ export default function ViewSos() {
         <View style={styles.tipsContainer}>
           <View style={styles.tipsHeader}>
             <Ionicons name="sparkles" size={20} color="#e6491e" />
-            <Text style={styles.tipsHeaderText}>
-              INKINGI AI Safety Tips
-            </Text>
+            <Text style={styles.tipsHeaderText}>INKINGI AI Safety Tips</Text>
           </View>
 
           {loadingTips ? (
@@ -819,7 +841,8 @@ export default function ViewSos() {
                 Safety guidance for this emergency
               </Text>
               <Text style={styles.tipSubtitle}>
-                AI-generated tips based on the emergency type, location, and situation.
+                AI-generated tips based on the emergency type, location, and
+                situation.
               </Text>
 
               <View style={styles.tipsList}>
@@ -857,7 +880,11 @@ export default function ViewSos() {
               isVolunteered && styles.volunteerButtonDisabled,
             ]}
             activeOpacity={0.8}
-            onPress={isVolunteered ? handleDeleteVolunteer : () => setShowVolunteerFormModal(true)}
+            onPress={
+              isVolunteered
+                ? handleDeleteVolunteer
+                : () => setShowVolunteerFormModal(true)
+            }
           >
             <Ionicons
               name={isVolunteered ? "checkmark-circle" : "hand-right"}

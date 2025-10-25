@@ -1,7 +1,11 @@
+import { notificationsApi } from "@/services/api/api.service";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,133 +16,142 @@ import {
 type NotificationType = "emergency" | "post" | "system" | "alert";
 
 interface Notification {
-  id: number;
+  id: string;
   type: NotificationType;
   title: string;
   message: string;
-  time: string;
-  read: boolean;
-  icon: string;
-  iconColor: string;
-  backgroundColor: string;
+  createdAt: string;
+  isRead: boolean;
+  relatedId?: string;
 }
 
 export default function Notifications() {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | NotificationType>("all");
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: "emergency",
-      title: "Emergency Alert - Robbery",
-      message:
-        "Robbery reported 500m from your location on KN 5 Ave. Stay alert and avoid the area.",
-      time: "5 min ago",
-      read: false,
-      icon: "warning",
-      iconColor: "#dc2626",
-      backgroundColor: "#fef2f2",
-    },
-    {
-      id: 2,
-      type: "post",
-      title: "New Community Post",
-      message:
-        "Rwanda Red Cross posted about Blood Donation Drive This Weekend",
-      time: "1 hour ago",
-      read: false,
-      icon: "people",
-      iconColor: "#2563eb",
-      backgroundColor: "#eff6ff",
-    },
-    {
-      id: 3,
-      type: "alert",
-      title: "Safety Alert",
-      message:
-        "Heavy rainfall expected in your area. Risk of flooding. Stay safe.",
-      time: "2 hours ago",
-      read: false,
-      icon: "alert-circle",
-      iconColor: "#ea580c",
-      backgroundColor: "#fff7ed",
-    },
-    {
-      id: 4,
-      type: "emergency",
-      title: "Fire Emergency Nearby",
-      message:
-        "Fire reported at KG 123 St. Emergency services on the way. Avoid the area.",
-      time: "3 hours ago",
-      read: true,
-      icon: "flame",
-      iconColor: "#dc2626",
-      backgroundColor: "#fef2f2",
-    },
-    {
-      id: 5,
-      type: "post",
-      title: "New Community Post",
-      message:
-        "Kigali City Council posted about Emergency Preparedness Workshop",
-      time: "5 hours ago",
-      read: true,
-      icon: "people",
-      iconColor: "#2563eb",
-      backgroundColor: "#eff6ff",
-    },
-    {
-      id: 6,
-      type: "system",
-      title: "App Update Available",
-      message:
-        "Version 1.1 is now available with new features and improvements.",
-      time: "1 day ago",
-      read: true,
-      icon: "download",
-      iconColor: "#16a34a",
-      backgroundColor: "#f0fdf4",
-    },
-    {
-      id: 7,
-      type: "alert",
-      title: "Community Safety Tip",
-      message:
-        "Remember to update your emergency contacts and verify your location settings.",
-      time: "2 days ago",
-      read: true,
-      icon: "information-circle",
-      iconColor: "#0891b2",
-      backgroundColor: "#ecfeff",
-    },
-    {
-      id: 8,
-      type: "emergency",
-      title: "Medical Emergency Alert",
-      message:
-        "Ambulance requested in your area. Please give way to emergency vehicles.",
-      time: "3 days ago",
-      read: true,
-      icon: "medical",
-      iconColor: "#dc2626",
-      backgroundColor: "#fef2f2",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const STORAGE_KEY_READ = "@notifications_read_status";
+  const STORAGE_KEY_DELETED = "@notifications_deleted";
 
-  const markAsRead = (id: number) => {
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await notificationsApi.getAll();
+      
+      if (response.success && response.data) {
+        // Load local read status and deleted IDs
+        const readStatus = await getReadStatus();
+        const deletedIds = await getDeletedIds();
+        
+        // Filter out deleted notifications and merge with read status
+        const notificationsWithReadStatus = response.data
+          .filter((notif: Notification) => !deletedIds.includes(notif.id))
+          .map((notif: Notification) => ({
+            ...notif,
+            isRead: readStatus[notif.id] !== undefined ? readStatus[notif.id] : notif.isRead,
+          }));
+        
+        setNotifications(notificationsWithReadStatus);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getReadStatus = async (): Promise<Record<string, boolean>> => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_READ);
+      return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+      console.error("Error loading read status:", error);
+      return {};
+    }
+  };
+
+  const saveReadStatus = async (id: string, isRead: boolean) => {
+    try {
+      const readStatus = await getReadStatus();
+      readStatus[id] = isRead;
+      await AsyncStorage.setItem(STORAGE_KEY_READ, JSON.stringify(readStatus));
+    } catch (error) {
+      console.error("Error saving read status:", error);
+    }
+  };
+
+  const saveAllReadStatus = async (ids: string[]) => {
+    try {
+      const readStatus = await getReadStatus();
+      ids.forEach(id => {
+        readStatus[id] = true;
+      });
+      await AsyncStorage.setItem(STORAGE_KEY_READ, JSON.stringify(readStatus));
+    } catch (error) {
+      console.error("Error saving all read status:", error);
+    }
+  };
+
+  const getDeletedIds = async (): Promise<string[]> => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_DELETED);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Error loading deleted IDs:", error);
+      return [];
+    }
+  };
+
+  const saveDeletedId = async (id: string) => {
+    try {
+      const deletedIds = await getDeletedIds();
+      if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+        await AsyncStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deletedIds));
+      }
+    } catch (error) {
+      console.error("Error saving deleted ID:", error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchNotifications();
+    setRefreshing(false);
+  };
+
+  const markAsRead = async (id: string) => {
+    // Update local state
     setNotifications(
       notifications.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
+        notif.id === id ? { ...notif, isRead: true } : notif
       )
     );
+    
+    // Save to AsyncStorage
+    await saveReadStatus(id, true);
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((notif) => ({ ...notif, read: true })));
+  const markAllAsRead = async () => {
+    // Update local state
+    setNotifications(notifications.map((notif) => ({ ...notif, isRead: true })));
+    
+    // Save all to AsyncStorage
+    const allIds = notifications.map(n => n.id);
+    await saveAllReadStatus(allIds);
   };
 
-  const deleteNotification = (id: number) => {
+  const deleteNotification = async (id: string) => {
+    // Update local state
     setNotifications(notifications.filter((notif) => notif.id !== id));
+    
+    // Save to AsyncStorage
+    await saveDeletedId(id);
   };
 
   const filteredNotifications =
@@ -146,7 +159,65 @@ export default function Notifications() {
       ? notifications
       : notifications.filter((notif) => notif.type === filter);
 
-  const unreadCount = notifications.filter((notif) => !notif.read).length;
+  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+
+  const getNotificationStyle = (type: NotificationType) => {
+    switch (type) {
+      case "emergency":
+        return {
+          icon: "warning" as const,
+          iconColor: "#dc2626",
+          backgroundColor: "#fef2f2",
+        };
+      case "post":
+        return {
+          icon: "people" as const,
+          iconColor: "#2563eb",
+          backgroundColor: "#eff6ff",
+        };
+      case "alert":
+        return {
+          icon: "alert-circle" as const,
+          iconColor: "#ea580c",
+          backgroundColor: "#fff7ed",
+        };
+      case "system":
+        return {
+          icon: "settings" as const,
+          iconColor: "#16a34a",
+          backgroundColor: "#f0fdf4",
+        };
+      default:
+        return {
+          icon: "notifications" as const,
+          iconColor: "#666666",
+          backgroundColor: "#f4f4f4",
+        };
+    }
+  };
+
+  const formatTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#e6491e" />
+        <Text style={styles.loadingText}>Loading notifications...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -271,6 +342,14 @@ export default function Notifications() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#e6491e"]}
+            tintColor="#e6491e"
+          />
+        }
       >
         {filteredNotifications.length === 0 ? (
           <View style={styles.emptyState}>
@@ -281,57 +360,64 @@ export default function Notifications() {
             </Text>
           </View>
         ) : (
-          filteredNotifications.map((notification) => (
-            <TouchableOpacity
-              key={notification.id}
-              style={[
-                styles.notificationCard,
-                !notification.read && styles.notificationCardUnread,
-              ]}
-              activeOpacity={0.7}
-              onPress={() => {
-                markAsRead(notification.id);
-                if (notification.type === "post") {
-                  router.push("/post-detail");
-                }
-              }}
-            >
-              <View
-                style={[
-                  styles.notificationIcon,
-                  { backgroundColor: notification.backgroundColor },
-                ]}
-              >
-                <Ionicons
-                  name={notification.icon as any}
-                  size={24}
-                  color={notification.iconColor}
-                />
-              </View>
-              <View style={styles.notificationContent}>
-                <View style={styles.notificationHeader}>
-                  <Text style={styles.notificationTitle}>
-                    {notification.title}
-                  </Text>
-                  {!notification.read && <View style={styles.unreadDot} />}
-                </View>
-                <Text style={styles.notificationMessage}>
-                  {notification.message}
-                </Text>
-                <Text style={styles.notificationTime}>{notification.time}</Text>
-              </View>
+          filteredNotifications.map((notification) => {
+            const style = getNotificationStyle(notification.type);
+            return (
               <TouchableOpacity
-                style={styles.deleteButton}
+                key={notification.id}
+                style={[
+                  styles.notificationCard,
+                  !notification.isRead && styles.notificationCardUnread,
+                ]}
                 activeOpacity={0.7}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  deleteNotification(notification.id);
+                onPress={() => {
+                  markAsRead(notification.id);
+                  if (notification.type === "emergency" && notification.relatedId) {
+                    router.push(`/view-sos?emergencyId=${notification.relatedId}`);
+                  } else if (notification.type === "post" && notification.relatedId) {
+                    router.push(`/post-detail?postId=${notification.relatedId}`);
+                  }
                 }}
               >
-                <Ionicons name="close-circle" size={20} color="#999999" />
+                <View
+                  style={[
+                    styles.notificationIcon,
+                    { backgroundColor: style.backgroundColor },
+                  ]}
+                >
+                  <Ionicons
+                    name={style.icon}
+                    size={24}
+                    color={style.iconColor}
+                  />
+                </View>
+                <View style={styles.notificationContent}>
+                  <View style={styles.notificationHeader}>
+                    <Text style={styles.notificationTitle}>
+                      {notification.title}
+                    </Text>
+                    {!notification.isRead && <View style={styles.unreadDot} />}
+                  </View>
+                  <Text style={styles.notificationMessage}>
+                    {notification.message}
+                  </Text>
+                  <Text style={styles.notificationTime}>
+                    {formatTime(notification.createdAt)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  activeOpacity={0.7}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(notification.id);
+                  }}
+                >
+                  <Ionicons name="close-circle" size={20} color="#999999" />
+                </TouchableOpacity>
               </TouchableOpacity>
-            </TouchableOpacity>
-          ))
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -489,5 +575,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#666666",
     textAlign: "center",
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666666",
   },
 });

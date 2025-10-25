@@ -68,6 +68,12 @@ export const API_CONFIG = {
     GET_USER_PROFILE: "/auth/profile",
     UPDATE_USER_PROFILE: "/auth/profile",
     UPLOAD_PROFILE_IMAGE: "/auth/profile/image",
+
+    // Notifications
+    GET_ALL_NOTIFICATIONS: "/notifications",
+    MARK_NOTIFICATION_READ: "/notifications/:id/read",
+    MARK_ALL_NOTIFICATIONS_READ: "/notifications/read-all",
+    DELETE_NOTIFICATION: "/notifications/:id",
   },
 };
 
