@@ -133,9 +133,9 @@ export default function AppLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: t("tabs.profile"),
+          title: "More",
           tabBarIcon: ({ size, color }) => (
-            <MaterialIcons name="person-outline" size={size} color={color} />
+            <MaterialIcons name="apps" size={size} color={color} />
           ),
         }}
         listeners={{

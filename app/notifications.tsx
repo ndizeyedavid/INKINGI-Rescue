@@ -1,4 +1,5 @@
 import { notificationsApi } from "@/services/api/api.service";
+import { useNotification } from "@/context/NotificationContext";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -27,6 +28,7 @@ interface Notification {
 
 export default function Notifications() {
   const router = useRouter();
+  const { refreshUnreadCount } = useNotification();
   const [filter, setFilter] = useState<"all" | NotificationType>("all");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,6 +137,9 @@ export default function Notifications() {
     
     // Save to AsyncStorage
     await saveReadStatus(id, true);
+    
+    // Refresh unread count in context
+    await refreshUnreadCount();
   };
 
   const markAllAsRead = async () => {
@@ -144,6 +149,9 @@ export default function Notifications() {
     // Save all to AsyncStorage
     const allIds = notifications.map(n => n.id);
     await saveAllReadStatus(allIds);
+    
+    // Refresh unread count in context
+    await refreshUnreadCount();
   };
 
   const deleteNotification = async (id: string) => {
@@ -152,6 +160,9 @@ export default function Notifications() {
     
     // Save to AsyncStorage
     await saveDeletedId(id);
+    
+    // Refresh unread count in context
+    await refreshUnreadCount();
   };
 
   const filteredNotifications =

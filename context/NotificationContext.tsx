@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { notificationsApi } from "@/services/api/api.service";
 import * as Notifications from "expo-notifications";
 import React, {
   createContext,
@@ -11,6 +13,8 @@ import { notificationService } from "../utils/notificationService";
 interface NotificationContextType {
   expoPushToken: string | null;
   notification: Notifications.Notification | null;
+  unreadCount: number;
+  refreshUnreadCount: () => Promise<void>;
   sendNotification: (title: string, body: string, data?: any) => Promise<void>;
   sendEmergencyNotification: (
     title: string,
@@ -36,17 +40,25 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] =
     useState<Notifications.Notification | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
   const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
+  const STORAGE_KEY_READ = "@notifications_read_status";
+  const STORAGE_KEY_DELETED = "@notifications_deleted";
 
   useEffect(() => {
     // Register for push notifications
     registerForPushNotifications();
+    
+    // Load initial unread count
+    refreshUnreadCount();
 
     // Listen for notifications received while app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         setNotification(notification);
+        // Refresh unread count when new notification arrives
+        refreshUnreadCount();
       });
 
     // Listen for user interactions with notifications
@@ -116,11 +128,55 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     await notificationService.cancelAllNotifications();
   };
 
+  const refreshUnreadCount = async (): Promise<void> => {
+    try {
+      const response = await notificationsApi.getAll();
+      
+      if (response.success && response.data) {
+        // Load local read status and deleted IDs
+        const readStatus = await getReadStatus();
+        const deletedIds = await getDeletedIds();
+        
+        // Filter and count unread notifications
+        const unread = response.data
+          .filter((notif: any) => !deletedIds.includes(notif.id))
+          .filter((notif: any) => {
+            const isRead = readStatus[notif.id] !== undefined ? readStatus[notif.id] : notif.isRead;
+            return !isRead;
+          });
+        
+        setUnreadCount(unread.length);
+      }
+    } catch (error) {
+      console.error("Error refreshing unread count:", error);
+    }
+  };
+
+  const getReadStatus = async (): Promise<Record<string, boolean>> => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_READ);
+      return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+      return {};
+    }
+  };
+
+  const getDeletedIds = async (): Promise<string[]> => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_DELETED);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      return [];
+    }
+  };
+
   return (
     <NotificationContext.Provider
       value={{
         expoPushToken,
         notification,
+        unreadCount,
+        refreshUnreadCount,
         sendNotification,
         sendEmergencyNotification,
         scheduleNotification,

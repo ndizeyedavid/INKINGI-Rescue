@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -8,6 +9,7 @@ export default function Header() {
   const router = useRouter();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { unreadCount } = useNotification();
 
   // Format user name - capitalize first letter of each word
   const formatName = (name: string) => {
@@ -36,7 +38,7 @@ export default function Header() {
         onPress={() => router.push("/notifications")}
       >
         <Ionicons name="notifications-outline" size={27} color="black" />
-        <View style={styles.notificationBadge} />
+        {unreadCount > 0 && <View style={styles.notificationBadge} />}
       </TouchableOpacity>
     </View>
   );

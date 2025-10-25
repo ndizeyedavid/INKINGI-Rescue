@@ -24,8 +24,8 @@ export default function ProfilePage() {
       route: "/setup-sos",
     },
     {
-      title: "Emergency AI",
-      icon: "chatbubble-ellipses-outline",
+      title: "INKINGI AI",
+      icon: "shield-checkmark-outline",
       route: "/emergency-ai",
     },
     {
