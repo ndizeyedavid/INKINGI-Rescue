@@ -24,6 +24,11 @@ export default function ProfilePage() {
       route: "/setup-sos",
     },
     {
+      title: "Emergency AI",
+      icon: "chatbubble-ellipses-outline",
+      route: "/emergency-ai",
+    },
+    {
       title: "Settings",
       icon: "settings-outline",
       route: "/settings",
@@ -72,7 +77,7 @@ export default function ProfilePage() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Profile" />
+      <PageHeader title="More Options" />
 
       <View style={styles.content}>
         {/* Menu Items */}

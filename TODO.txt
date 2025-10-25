@@ -10,11 +10,12 @@ mobile app
 7. onBoarding, cool slides [DONE]
 8. splash screen animation [DONE]
 9. Emergency Broadcast screen [DONE]
-10. Language changing 
-11. Backend setup
-12. backend integration😭
+10. Language changing [PARTIAL_DONE]
+11. Backend setup[DONE]
+12. backend integration😭[DONE]
 13. OAUTH integration😭
-14. Functional Push Notifications
+14. Functional Push Notifications[DONE]
+15. SCROLL DOWN TO REFRESH
 
 Government Dashboard
 ====================
@@ -29,7 +30,7 @@ SMS & USSD (Africas Talking)
 =============================
 
 1. Setup Africas Talking server [DONE]
-2. Integrate USSD endpoint
+2. Integrate USSD endpoint[DONE]
 3. Integrate SMS endpoint
 4. [BETA] Handle calls
 5. Translation for the USSD [DONE]
@@ -43,5 +44,17 @@ BACKEND SERVER (Nest.Js)
 4. connect prisma with mi db [DONE]
 5. create a db schema{progressive - step_by_step} [-dOnE]
 6. make AUTH functionalities [DONE]
-7. make SOS functionalities{report, view reports, flag report, volunteer}
-8. make community posts functionalities{fetch posts, create post, report post, delete post, comments and likes}
+7. make SOS functionalities{report, view reports, flag report, volunteer}[DONE]
+8. make community posts functionalities{fetch posts, create post, report post, delete post, comments and likes}[DONE]
+
+
+AI (Gemini)
+===========
+
+1. integrate with USSD
+2. integrate with Mobile app
+	- Chatbot with mic for audio prompts
+	- Recommendations(emergency preview)
+3. Ai on dashboard - HUGE part
+4. spam detection backend again
+5. 

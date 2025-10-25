@@ -15,7 +15,7 @@ export const API_CONFIG = {
     ? "http://192.168.137.1:3000" // Local development server
     : "https://your-production-api.com", // Production server
 
-  TIMEOUT: 120000, // 2 minutes
+  TIMEOUT: 30000, // 2 minutes
 
   // API Endpoints
   ENDPOINTS: {

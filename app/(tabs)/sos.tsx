@@ -172,7 +172,12 @@ export default function SosPage() {
         style={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={["#e6491e"]} // Android
+            tintColor="#e6491e" // iOS
+          />
         }
       >
         {loading ? (

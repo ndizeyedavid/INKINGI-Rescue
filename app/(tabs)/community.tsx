@@ -1,4 +1,6 @@
 import CommunityPostCard from "@/components/CommunityPostCard";
+import CustomAlert from "@/components/CustomAlert";
+import PageHeader from "@/components/pageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { postsApi } from "@/services/api/api.service";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,8 +16,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CustomAlert from "@/components/CustomAlert";
-import PageHeader from "@/components/pageHeader";
 
 interface Post {
   id: string;
@@ -40,7 +40,9 @@ export default function CommunityPage() {
 
   // Alert state
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("info");
+  const [alertType, setAlertType] = useState<
+    "success" | "error" | "warning" | "info"
+  >("info");
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -63,7 +65,7 @@ export default function CommunityPage() {
     try {
       setLoading(true);
       const response = await postsApi.getAll();
-      
+
       if (response.success && response.data) {
         setPosts(response.data);
       }
@@ -103,7 +105,7 @@ export default function CommunityPage() {
       "Delete Post",
       "Are you sure you want to delete this post? This action cannot be undone."
     );
-    
+
     // Note: For now, we'll need to implement a confirmation dialog
     // For immediate deletion without confirmation:
     try {
@@ -133,7 +135,9 @@ export default function CommunityPage() {
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubbles-outline" size={64} color="#cccccc" />
           <Text style={styles.emptyText}>No posts yet</Text>
-          <Text style={styles.emptySubtext}>Be the first to share something with the community!</Text>
+          <Text style={styles.emptySubtext}>
+            Be the first to share something with the community!
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -141,7 +145,12 @@ export default function CommunityPage() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#e6491e"]} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#e6491e"]} // Android
+              tintColor="#e6491e" // iOS
+            />
           }
         >
           {posts.map((post) => (
@@ -153,7 +162,11 @@ export default function CommunityPage() {
               title={post.title}
               content={post.content}
               imageUrl={post.imageUrl}
-              onMenuPress={user && user.id === post.user.id ? () => handleDeletePost(post.id) : undefined}
+              onMenuPress={
+                user && user.id === post.user.id
+                  ? () => handleDeletePost(post.id)
+                  : undefined
+              }
             />
           ))}
         </ScrollView>

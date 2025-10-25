@@ -1,12 +1,44 @@
+import { emergencyApi } from "@/services/api/api.service";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Tabs, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 export default function AppLayout() {
   const router = useRouter();
   const { t } = useTranslation();
+  const [pendingEmergenciesCount, setPendingEmergenciesCount] =
+    useState<number>(0);
+
+  useEffect(() => {
+    fetchPendingEmergencies();
+
+    // Refresh count every 30 seconds
+    const interval = setInterval(() => {
+      fetchPendingEmergencies();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchPendingEmergencies = async () => {
+    try {
+      const response = await emergencyApi.getAll();
+
+      if (response.success && response.data) {
+        const emergencies = Array.isArray(response.data) ? response.data : [];
+        // Count emergencies with status 'reported' (pending)
+        const pendingCount = emergencies.filter(
+          (e: any) => e.status === "PENDING"
+        ).length;
+        setPendingEmergenciesCount(pendingCount);
+      }
+    } catch (error) {
+      console.error("Error fetching pending emergencies:", error);
+    }
+  };
 
   return (
     <Tabs
@@ -22,7 +54,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.home'),
+          title: t("tabs.home"),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
@@ -37,11 +69,16 @@ export default function AppLayout() {
       <Tabs.Screen
         name="sos"
         options={{
-          title: t('tabs.sos'),
+          title: t("tabs.sos"),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="error-outline" size={size} color={color} />
           ),
-          tabBarBadge: "2",
+          tabBarBadge:
+            pendingEmergenciesCount > 0
+              ? pendingEmergenciesCount > 9
+                ? "9+"
+                : pendingEmergenciesCount
+              : undefined,
         }}
         listeners={{
           tabPress: () => {
@@ -53,7 +90,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: t('tabs.map'),
+          title: t("tabs.map"),
           tabBarIcon: ({ focused }) => (
             <View
               style={[
@@ -82,7 +119,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: t('tabs.community'),
+          title: t("tabs.community"),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="people-outline" size={size} color={color} />
           ),
@@ -96,7 +133,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: t('tabs.profile'),
+          title: t("tabs.profile"),
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="person-outline" size={size} color={color} />
           ),
