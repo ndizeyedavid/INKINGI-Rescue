@@ -15,6 +15,10 @@ module.exports = {
     },
     ios: {
       supportsTablet: true,
+      bundleIdentifier: "com.davidndizeye.inkingirescue",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       adaptiveIcon: {

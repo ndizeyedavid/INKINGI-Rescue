@@ -6,6 +6,7 @@ interface ChatInputProps {
   onChangeText: (text: string) => void;
   onSend: () => void;
   onMicPress?: () => void;
+  isRecording?: boolean;
 }
 
 export default function ChatInput({
@@ -13,16 +14,24 @@ export default function ChatInput({
   onChangeText,
   onSend,
   onMicPress,
+  isRecording = false,
 }: ChatInputProps) {
   return (
     <View style={styles.inputContainer}>
       <View style={styles.inputWrapper}>
         <TouchableOpacity
-          style={styles.micButton}
+          style={[
+            styles.micButton,
+            isRecording && styles.micButtonRecording,
+          ]}
           onPress={onMicPress}
           activeOpacity={0.7}
         >
-          <Ionicons name="mic" size={22} color="#e6491e" />
+          <Ionicons 
+            name={isRecording ? "stop-circle" : "mic"} 
+            size={22} 
+            color={isRecording ? "#ffffff" : "#e6491e"} 
+          />
         </TouchableOpacity>
 
         <TextInput
@@ -78,6 +87,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
+  },
+  micButtonRecording: {
+    backgroundColor: "#e6491e",
+    borderRadius: 20,
   },
   input: {
     flex: 1,

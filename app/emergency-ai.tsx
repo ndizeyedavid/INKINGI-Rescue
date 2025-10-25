@@ -4,9 +4,11 @@ import ChatInput from "@/components/ai/ChatInput";
 import ChatMessage from "@/components/ai/ChatMessage";
 import SuggestionPills from "@/components/ai/SuggestionPills";
 import TypingIndicator from "@/components/ai/TypingIndicator";
+import WelcomeMessage from "@/components/ai/WelcomeMessage";
 import { chatStorageService } from "@/services/chatStorage.service";
 import { geminiService } from "@/services/gemini.service";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Keyboard,
@@ -33,9 +35,11 @@ interface ChatHistory {
 }
 
 export default function EmergencyAI() {
+  const { i18n } = useTranslation();
+
   const initialMessage: Message = {
-    id: "1",
-    text: "Hello! I'm your Emergency AI Assistant. I can help you with:\n\n• Emergency response guidance\n• First aid instructions\n• Safety tips\n• Emergency contact information\n\nHow can I assist you today?",
+    id: "welcome",
+    text: "", // Empty text for welcome message
     isUser: false,
     timestamp: new Date(),
   };
@@ -43,22 +47,23 @@ export default function EmergencyAI() {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string>("current");
   const [isLoading, setIsLoading] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
-  const streamingTextRef = useRef("");
+  const streamingTextRef = useRef<string>("");
 
   const suggestions = [
-    { id: "1", text: "🚑 Medical Emergency", icon: "medical" },
-    { id: "2", text: "🔥 Fire Safety", icon: "flame" },
-    { id: "3", text: "🚗 Car Accident", icon: "car" },
-    { id: "4", text: "💊 First Aid", icon: "fitness" },
-    { id: "5", text: "🌊 Flood Safety", icon: "water" },
-    { id: "6", text: "⚡ Earthquake Tips", icon: "warning" },
-    { id: "7", text: "🏥 CPR Instructions", icon: "heart" },
-    { id: "8", text: "☎️ Emergency Contacts", icon: "call" },
+    { id: "1", text: "Medical Emergency", icon: "medical" },
+    { id: "2", text: "Fire Safety", icon: "flame" },
+    { id: "3", text: "Car Accident", icon: "car" },
+    { id: "4", text: "First Aid", icon: "fitness" },
+    { id: "5", text: "Flood Safety", icon: "water" },
+    { id: "6", text: "Earthquake Tips", icon: "warning" },
+    { id: "7", text: "CPR Instructions", icon: "heart" },
+    { id: "8", text: "Emergency Contacts", icon: "call" },
   ];
 
   // Load chat history and current chat on mount
@@ -80,7 +85,7 @@ export default function EmergencyAI() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load chat history
       const history = await chatStorageService.loadChatHistory();
       setChatHistory(history);
@@ -90,7 +95,7 @@ export default function EmergencyAI() {
       if (currentChat && currentChat.messages.length > 1) {
         setMessages(currentChat.messages);
         setCurrentChatId(currentChat.chatId);
-        
+
         // Restore Gemini chat session with history
         const geminiHistory = currentChat.messages
           .filter((msg) => msg.id !== "1") // Skip initial message
@@ -98,7 +103,7 @@ export default function EmergencyAI() {
             role: msg.isUser ? ("user" as const) : ("model" as const),
             parts: [{ text: msg.text }],
           }));
-        
+
         if (geminiHistory.length > 0) {
           await geminiService.loadChatHistory(geminiHistory);
         }
@@ -145,11 +150,15 @@ export default function EmergencyAI() {
         (chunk: string) => {
           // chunk already contains the full accumulated text
           streamingTextRef.current = chunk;
-          
+
           // Update the AI message in real-time
           setMessages((prev) => {
             const lastMessage = prev[prev.length - 1];
-            if (lastMessage && !lastMessage.isUser && lastMessage.id === aiMessageId) {
+            if (
+              lastMessage &&
+              !lastMessage.isUser &&
+              lastMessage.id === aiMessageId
+            ) {
               // Update existing streaming message
               return [
                 ...prev.slice(0, -1),
@@ -178,7 +187,7 @@ export default function EmergencyAI() {
     } catch (error) {
       console.error("Error getting AI response:", error);
       setIsTyping(false);
-      
+
       // Show fallback error message
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -190,13 +199,21 @@ export default function EmergencyAI() {
     }
   };
 
+  // Microphone button disabled - voice input not available
+  const handleMicPress = async () => {
+    Alert.alert(
+      "Voice Input Unavailable",
+      "Please type your emergency message in the text field below."
+    );
+  };
+
   const handleSuggestionPress = (suggestionText: string) => {
     setInputText(suggestionText);
   };
 
   const getConversationTitle = (): string => {
     if (messages.length === 1) {
-      return "Emergency AI Assistant";
+      return "INKINGI AI";
     }
 
     // Get the first user message to generate a title
@@ -239,7 +256,7 @@ export default function EmergencyAI() {
       }
     }
 
-    return "Emergency AI Assistant";
+    return "INKINGI AI";
   };
 
   const toggleDrawer = () => {
@@ -257,7 +274,7 @@ export default function EmergencyAI() {
           timestamp: new Date(),
           messages: messages,
         };
-        
+
         await chatStorageService.addChatToHistory(newHistory);
         setChatHistory([newHistory, ...chatHistory]);
       }
@@ -271,7 +288,7 @@ export default function EmergencyAI() {
       const newChatId = Date.now().toString();
       setCurrentChatId(newChatId);
       await chatStorageService.saveCurrentChat([initialMessage], newChatId);
-      
+
       toggleDrawer();
     } catch (error) {
       console.error("Error starting new chat:", error);
@@ -290,8 +307,11 @@ export default function EmergencyAI() {
           timestamp: new Date(),
           messages: messages,
         };
-        
-        await chatStorageService.updateChatInHistory(currentChatId, currentHistory);
+
+        await chatStorageService.updateChatInHistory(
+          currentChatId,
+          currentHistory
+        );
         setChatHistory([
           currentHistory,
           ...chatHistory.filter((h) => h.id !== currentChatId),
@@ -310,14 +330,14 @@ export default function EmergencyAI() {
           role: msg.isUser ? ("user" as const) : ("model" as const),
           parts: [{ text: msg.text }],
         }));
-      
+
       geminiService.resetChat();
       if (geminiHistory.length > 0) {
         await geminiService.loadChatHistory(geminiHistory);
       } else {
         await geminiService.startNewChat();
       }
-      
+
       toggleDrawer();
     } catch (error) {
       console.error("Error loading chat:", error);
@@ -383,9 +403,13 @@ export default function EmergencyAI() {
           showsVerticalScrollIndicator={false}
           onContentSizeChange={scrollToBottom}
         >
-          {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
+          {messages.map((message) => {
+            // Show welcome component for initial message
+            if (message.id === "welcome") {
+              return <WelcomeMessage key={message.id} />;
+            }
+            return <ChatMessage key={message.id} message={message} />;
+          })}
 
           {isTyping && <TypingIndicator />}
         </ScrollView>
@@ -400,6 +424,8 @@ export default function EmergencyAI() {
           value={inputText}
           onChangeText={setInputText}
           onSend={handleSend}
+          onMicPress={handleMicPress}
+          isRecording={isRecording}
         />
       </KeyboardAvoidingView>
 
