@@ -159,6 +159,75 @@ IMPORTANT: Always emphasize calling professional emergency services for life-thr
   resetChat() {
     this.chatHistory = [];
   }
+
+  /**
+   * Generate emergency-specific safety tips
+   */
+  async generateEmergencyTips(emergencyData: {
+    type: string;
+    title: string;
+    description: string;
+    address: string;
+  }): Promise<string[]> {
+    try {
+      const prompt = `Based on this emergency situation, provide 5 specific, actionable safety tips:
+
+Emergency Type: ${emergencyData.type}
+Title: ${emergencyData.title}
+Description: ${emergencyData.description}
+Location: ${emergencyData.address}
+
+Provide exactly 5 numbered tips that are:
+1. Specific to this emergency type and situation
+2. Immediately actionable
+3. Prioritized by importance (most critical first)
+4. Clear and concise (one sentence each)
+5. Focused on safety and survival
+
+Format your response as a numbered list (1. 2. 3. 4. 5.) with no additional text before or after the list.`;
+
+      const model = genAI.getGenerativeModel({
+        model: this.modelName,
+      });
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.8,
+          topP: 0.95,
+          topK: 40,
+          maxOutputTokens: 1024,
+        },
+      });
+
+      const responseText = result.response.text() || "";
+      
+      // Parse the numbered list into an array
+      const tips = responseText
+        .split('\n')
+        .filter(line => line.trim().match(/^\d+\./))
+        .map(line => line.replace(/^\d+\.\s*/, '').trim())
+        .filter(tip => tip.length > 0);
+
+      return tips.length > 0 ? tips : [
+        "Stay calm and assess the situation carefully.",
+        "Call emergency services (112) immediately if needed.",
+        "Ensure your own safety before helping others.",
+        "Follow instructions from emergency responders.",
+        "Keep emergency contacts readily available."
+      ];
+    } catch (error) {
+      console.error("Error generating emergency tips:", error);
+      // Return fallback tips
+      return [
+        "Stay calm and assess the situation carefully.",
+        "Call emergency services (112) immediately if needed.",
+        "Ensure your own safety before helping others.",
+        "Follow instructions from emergency responders.",
+        "Keep emergency contacts readily available."
+      ];
+    }
+  }
 }
 
 export const geminiService = new GeminiService();

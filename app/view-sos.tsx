@@ -1,10 +1,12 @@
 import { emergencyApi } from "@/services/api/api.service";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { Audio, Video, ResizeMode } from "expo-av";
 import * as Location from "expo-location";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import VolunteerForm from "@/components/VolunteerForm";
+import { geminiService } from "@/services/gemini.service";
 import {
   ActivityIndicator,
   Alert,
@@ -40,6 +42,13 @@ interface Volunteer {
   createdAt: string;
 }
 
+interface Media {
+  id: string;
+  mediaUrl: string;
+  mediaType: "image" | "video" | "audio";
+  createdAt: string;
+}
+
 interface EmergencyData {
   id: string;
   type: string;
@@ -56,6 +65,7 @@ interface EmergencyData {
     lastName: string;
     email: string;
   };
+  media?: Media[];
   mediaFiles?: {
     id: string;
     url: string;
@@ -103,6 +113,12 @@ export default function ViewSos() {
     message: "",
     onButtonPress: undefined,
   });
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [audioSound, setAudioSound] = useState<Audio.Sound | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const videoRef = useRef<Video>(null);
+  const [aiTips, setAiTips] = useState<string[]>([]);
+  const [loadingTips, setLoadingTips] = useState(false);
 
   // Get volunteers from emergency data
   const volunteers = emergencyData?.volunteers || [];
@@ -110,6 +126,13 @@ export default function ViewSos() {
   useEffect(() => {
     fetchEmergencyDetails();
     getUserLocation();
+
+    // Cleanup audio on unmount
+    return () => {
+      if (audioSound) {
+        audioSound.unloadAsync();
+      }
+    };
   }, [emergencyId]);
 
   const fetchEmergencyDetails = async () => {
@@ -127,6 +150,9 @@ export default function ViewSos() {
           );
           setIsVolunteered(hasVolunteered);
         }
+
+        // Generate AI tips for this emergency
+        generateAITips(response.data);
       } else {
         showAlert(
           "error",
@@ -143,6 +169,31 @@ export default function ViewSos() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateAITips = async (emergency: EmergencyData) => {
+    try {
+      setLoadingTips(true);
+      const tips = await geminiService.generateEmergencyTips({
+        type: emergency.type,
+        title: emergency.title,
+        description: emergency.description,
+        address: emergency.address,
+      });
+      setAiTips(tips);
+    } catch (error) {
+      console.error("Error generating AI tips:", error);
+      // Set fallback tips if AI fails
+      setAiTips([
+        "Stay calm and assess the situation carefully.",
+        "Call emergency services (112) immediately if needed.",
+        "Ensure your own safety before helping others.",
+        "Follow instructions from emergency responders.",
+        "Keep emergency contacts readily available."
+      ]);
+    } finally {
+      setLoadingTips(false);
     }
   };
 
@@ -332,9 +383,18 @@ export default function ViewSos() {
   };
 
   const getMediaByType = (type: "image" | "video" | "audio") => {
-    return (
-      emergencyData?.mediaFiles?.filter((file) => file.type === type) || []
-    );
+    // Check both media and mediaFiles for backward compatibility
+    const mediaFromNew = emergencyData?.media?.filter((file) => file.mediaType === type) || [];
+    const mediaFromOld = emergencyData?.mediaFiles?.filter((file) => file.type === type) || [];
+    
+    // Convert new format to old format for consistency
+    const convertedMedia = mediaFromNew.map(m => ({
+      id: m.id,
+      url: m.mediaUrl,
+      type: m.mediaType
+    }));
+    
+    return [...convertedMedia, ...mediaFromOld];
   };
 
   const handleVolunteerSubmit = async (data: {
@@ -373,6 +433,54 @@ export default function ViewSos() {
       );
     } finally {
       setIsSubmittingVolunteer(false);
+    }
+  };
+
+  const handlePlayAudio = async (audioUrl: string, audioId: string) => {
+    try {
+      // Stop currently playing audio if any
+      if (audioSound) {
+        await audioSound.stopAsync();
+        await audioSound.unloadAsync();
+        setAudioSound(null);
+        
+        // If clicking the same audio, just stop it
+        if (playingAudio === audioId) {
+          setPlayingAudio(null);
+          return;
+        }
+      }
+
+      // Set audio mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+      });
+
+      // Load and play new audio
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: audioUrl },
+        { shouldPlay: true }
+      );
+
+      setAudioSound(sound);
+      setPlayingAudio(audioId);
+
+      // Set up playback status update
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setPlayingAudio(null);
+          sound.unloadAsync();
+          setAudioSound(null);
+        }
+      });
+    } catch (error) {
+      console.error("Error playing audio:", error);
+      showAlert(
+        "error",
+        "Playback Error",
+        "Failed to play audio recording. Please try again."
+      );
     }
   };
 
@@ -644,10 +752,11 @@ export default function ViewSos() {
                     key={file.id}
                     style={styles.imageWrapper}
                     activeOpacity={0.8}
+                    onPress={() => setSelectedVideo(file.url)}
                   >
                     <Image source={{ uri: file.url }} style={styles.image} />
                     <View style={styles.videoOverlay}>
-                      <Ionicons name="play-circle" size={32} color="#ffffff" />
+                      <Ionicons name="play-circle" size={48} color="#ffffff" />
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -665,75 +774,64 @@ export default function ViewSos() {
             {audios.map((file, index) => (
               <TouchableOpacity
                 key={file.id}
-                style={styles.audioButton}
+                style={[
+                  styles.audioButton,
+                  playingAudio === file.id && styles.audioButtonPlaying
+                ]}
                 activeOpacity={0.7}
+                onPress={() => handlePlayAudio(file.url, file.id)}
               >
-                <Ionicons name="play" size={20} color="#000000" />
-                <Text style={styles.audioText}>
-                  Audio recording {index + 1}
+                <Ionicons 
+                  name={playingAudio === file.id ? "stop" : "play"} 
+                  size={20} 
+                  color={playingAudio === file.id ? "#e6491e" : "#000000"} 
+                />
+                <Text style={[
+                  styles.audioText,
+                  playingAudio === file.id && styles.audioTextPlaying
+                ]}>
+                  {playingAudio === file.id ? "Playing..." : `Audio recording ${index + 1}`}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
 
-        {/* Tips Section */}
+        {/* AI-Generated Tips Section */}
         <View style={styles.tipsContainer}>
           <View style={styles.tipsHeader}>
-            <Ionicons name="information-circle" size={20} color="#e6491e" />
+            <Ionicons name="sparkles" size={20} color="#e6491e" />
             <Text style={styles.tipsHeaderText}>
-              Tips that might be helpful
+              INKINGI AI Safety Tips
             </Text>
           </View>
 
-          <Text style={styles.tipTitle}>If you are in an accident</Text>
-          <Text style={styles.tipSubtitle}>
-            Stay Calm & Check for Injuries – Assess yourself and passengers for
-            injuries.
-          </Text>
-
-          <View style={styles.tipsList}>
-            <View style={styles.tipItem}>
-              <Text style={styles.tipNumber}>1.</Text>
-              <Text style={styles.tipText}>
-                Move to Safety (If Possible) – If the vehicle is drivable, move
-                it to the side of the road. Turn on hazard lights.
+          {loadingTips ? (
+            <View style={styles.tipsLoadingContainer}>
+              <ActivityIndicator size="small" color="#e6491e" />
+              <Text style={styles.tipsLoadingText}>
+                Generating personalized safety tips...
               </Text>
             </View>
-
-            <View style={styles.tipItem}>
-              <Text style={styles.tipNumber}>2.</Text>
-              <Text style={styles.tipText}>
-                Call Emergency Services – Dial{" "}
-                <Text style={styles.boldText}>112</Text> for medical and police
-                assistance.
+          ) : (
+            <>
+              <Text style={styles.tipTitle}>
+                Safety guidance for this emergency
               </Text>
-            </View>
-
-            <View style={styles.tipItem}>
-              <Text style={styles.tipNumber}>3.</Text>
-              <Text style={styles.tipText}>
-                Do Not Leave the Scene – Stay until authorities arrive unless
-                medical attention is needed.
+              <Text style={styles.tipSubtitle}>
+                AI-generated tips based on the emergency type, location, and situation.
               </Text>
-            </View>
 
-            <View style={styles.tipItem}>
-              <Text style={styles.tipNumber}>4.</Text>
-              <Text style={styles.tipText}>
-                Exchange Information – Collect contact and insurance details
-                with other involved parties.
-              </Text>
-            </View>
-
-            <View style={styles.tipItem}>
-              <Text style={styles.tipNumber}>5.</Text>
-              <Text style={styles.tipText}>
-                Document the Scene – Take photos of the vehicles, damage, and
-                surroundings if safe to do so.
-              </Text>
-            </View>
-          </View>
+              <View style={styles.tipsList}>
+                {aiTips.map((tip, index) => (
+                  <View key={index} style={styles.tipItem}>
+                    <Text style={styles.tipNumber}>{index + 1}.</Text>
+                    <Text style={styles.tipText}>{tip}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
 
@@ -808,6 +906,49 @@ export default function ViewSos() {
             </TouchableOpacity>
           )}
         </TouchableOpacity>
+      </Modal>
+
+      {/* Video Modal */}
+      <Modal
+        visible={selectedVideo !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setSelectedVideo(null);
+          if (videoRef.current) {
+            videoRef.current.pauseAsync();
+          }
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setSelectedVideo(null);
+                if (videoRef.current) {
+                  videoRef.current.pauseAsync();
+                }
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={28} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {selectedVideo && (
+            <View style={styles.videoModalContainer}>
+              <Video
+                ref={videoRef}
+                source={{ uri: selectedVideo }}
+                style={styles.videoPlayer}
+                useNativeControls
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay
+              />
+            </View>
+          )}
+        </View>
       </Modal>
 
       {/* Volunteers Modal */}
@@ -1279,12 +1420,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
     alignSelf: "flex-start",
-    marginBottom: 24,
+    marginBottom: 12,
+  },
+  audioButtonPlaying: {
+    backgroundColor: "#fff5f3",
+    borderWidth: 1,
+    borderColor: "#e6491e",
   },
   audioText: {
     fontSize: 14,
     color: "#000000",
     fontWeight: "500",
+  },
+  audioTextPlaying: {
+    color: "#e6491e",
+    fontWeight: "600",
+  },
+  tipsLoadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 20,
+    justifyContent: "center",
+  },
+  tipsLoadingText: {
+    fontSize: 14,
+    color: "#666666",
+    fontStyle: "italic",
   },
   tipsContainer: {
     backgroundColor: "#fff8f5",
@@ -1367,6 +1529,16 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   modalImage: {
+    width: SCREEN_WIDTH,
+    height: "100%",
+  },
+  videoModalContainer: {
+    width: SCREEN_WIDTH,
+    height: "80%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  videoPlayer: {
     width: SCREEN_WIDTH,
     height: "100%",
   },
