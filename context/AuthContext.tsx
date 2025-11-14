@@ -1,9 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from "expo-secure-store";
+import { USE_MOCK_AUTH } from "@/config/api.config";
+import { authApi, userApi } from "@/services/api";
+import { mockAuthService } from "@/services/api/mockAuth.service";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { authApi, userApi } from '@/services/api';
-import { USE_MOCK_AUTH } from '@/config/api.config';
-import { mockAuthService } from '@/services/api/mockAuth.service';
 
 interface User {
   id: string;
@@ -19,8 +18,16 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (name: string, email: string, password: string, phoneNumber?: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  signUp: (
+    name: string,
+    email: string,
+    password: string,
+    phoneNumber?: string
+  ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
@@ -43,13 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Check for stored token
       const token = await AsyncStorage.getItem("authToken");
-      
+
       if (token) {
         // Validate token by fetching user profile
         const response = USE_MOCK_AUTH
           ? await mockAuthService.getProfile()
           : await userApi.getProfile();
-        
+
         if (response.success && response.data) {
           setUser(response.data);
         } else {
@@ -65,65 +72,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const signIn = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       // Use mock auth if enabled
-      const response = USE_MOCK_AUTH 
+      const response = USE_MOCK_AUTH
         ? await mockAuthService.login(email, password)
         : await authApi.login(email, password);
 
       if (response.success && response.data) {
-        const { token, refreshToken, user: userData } = response.data;
+        console.log(response.data);
+        const { access_token, refreshToken, user: userData } = response.data;
 
         // Store tokens securely
-        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("authToken", access_token);
         if (refreshToken) {
           await AsyncStorage.setItem("refreshToken", refreshToken);
         }
-        
+
         // Store user data
         await AsyncStorage.setItem("user", JSON.stringify(userData));
-        
+
         // Update state
         setUser(userData);
 
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          error: response.error || "Invalid email or password" 
+        return {
+          success: false,
+          error: response.error || "Invalid email or password",
         };
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
-      return { 
-        success: false, 
-        error: error.message || "Failed to sign in. Please try again." 
+      return {
+        success: false,
+        error: error.message || "Failed to sign in. Please try again.",
       };
     }
   };
 
   const signUp = async (
-    name: string, 
-    email: string, 
+    name: string,
+    email: string,
     password: string,
     phoneNumber?: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       // Split name into firstName and lastName
-      const nameParts = name.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || firstName;
+      const nameParts = name.trim().split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || firstName;
 
       // Use mock auth if enabled
       const response = USE_MOCK_AUTH
-        ? await mockAuthService.register({ name, email, password, phoneNumber: phoneNumber || "" })
-        : await authApi.register({ 
-            firstName, 
-            lastName, 
-            email, 
-            password, 
-            phoneNumber: phoneNumber || "" 
+        ? await mockAuthService.register({
+            name,
+            email,
+            password,
+            phoneNumber: phoneNumber || "",
+          })
+        : await authApi.register({
+            firstName,
+            lastName,
+            email,
+            password,
+            phoneNumber: phoneNumber || "",
           });
 
       if (response.success && response.data) {
@@ -134,25 +150,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (refreshToken) {
           await AsyncStorage.setItem("refreshToken", refreshToken);
         }
-        
+
         // Store user data
         await AsyncStorage.setItem("user", JSON.stringify(userData));
-        
+
         // Update state
         setUser(userData);
 
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          error: response.error || "Failed to create account" 
+        return {
+          success: false,
+          error: response.error || "Failed to create account",
         };
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
-      return { 
-        success: false, 
-        error: error.message || "Failed to create account. Please try again." 
+      return {
+        success: false,
+        error: error.message || "Failed to create account. Please try again.",
       };
     }
   };
@@ -194,7 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = USE_MOCK_AUTH
         ? await mockAuthService.getProfile()
         : await userApi.getProfile();
-      
+
       if (response.success && response.data) {
         setUser(response.data);
         await AsyncStorage.setItem("user", JSON.stringify(response.data));

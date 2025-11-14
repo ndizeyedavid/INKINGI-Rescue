@@ -1,4 +1,5 @@
 import CustomAlert from "@/components/CustomAlert";
+import { panicButtonsStorage } from "@/utils/panicButtonsStorage";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -10,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { panicButtonsStorage } from "@/utils/panicButtonsStorage";
 
 export default function SetupPanicButton() {
   const router = useRouter();
@@ -18,6 +18,8 @@ export default function SetupPanicButton() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
   const [selectedMode, setSelectedMode] = useState<string | null>("loud");
+  const [shakeDuration, setShakeDuration] = useState<string>("5");
+  const [shakeDurationError, setShakeDurationError] = useState<string | null>(null);
 
   // Alert states
   const [alertVisible, setAlertVisible] = useState(false);
@@ -58,8 +60,8 @@ export default function SetupPanicButton() {
   ];
 
   const triggers = [
-    { id: "volume-3", label: "Volume Down × 3", icon: "volume-low" },
-    { id: "volume-5", label: "Volume Down × 5", icon: "volume-medium" },
+    // { id: "volume-3", label: "Volume Down × 3", icon: "volume-low" },
+    // { id: "volume-5", label: "Volume Down × 5", icon: "volume-medium" },
     { id: "shake", label: "Shake Device", icon: "phone-portrait" },
   ];
 
@@ -112,10 +114,25 @@ export default function SetupPanicButton() {
       return;
     }
 
+    if (selectedTrigger === "shake") {
+      const v = shakeDuration.trim();
+      const n = parseInt(v, 10);
+      if (!v || !Number.isInteger(n) || n < 1 || n > 60) {
+        setShakeDurationError("Enter a value between 1 and 60");
+        showAlert(
+          "warning",
+          "Invalid Duration",
+          "Please enter 1-60 seconds for shake detection"
+        );
+        return;
+      }
+    }
+
     try {
       // Get type details
       const typeData = emergencyTypes.find((t) => t.id === selectedType);
-      const typeLabel = selectedType === "other" ? emergencyType.trim() : typeData?.label || "";
+      const typeLabel =
+        selectedType === "other" ? emergencyType.trim() : typeData?.label || "";
       const typeIcon = typeData?.icon || "alert-circle";
       const typeColor = typeData?.color || "#e6491e";
 
@@ -128,13 +145,19 @@ export default function SetupPanicButton() {
       const modeLabel = modeData?.label || "";
 
       // Save panic button to storage
-      await panicButtonsStorage.saveButton({
+      const basePayload = {
         type: typeLabel,
         trigger: triggerLabel,
         mode: modeLabel,
         icon: typeIcon,
         color: typeColor,
-      });
+      };
+      const payload =
+        selectedTrigger === "shake"
+          ? { ...basePayload, shakeDurationSeconds: parseInt(shakeDuration, 10) }
+          : basePayload;
+
+      await panicButtonsStorage.saveButton(payload);
 
       showAlert(
         "success",
@@ -292,6 +315,43 @@ export default function SetupPanicButton() {
               </TouchableOpacity>
             ))}
           </View>
+          {selectedTrigger === "shake" && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.inputLabel}>Shake Detection Duration (seconds)</Text>
+              <View
+                style={[
+                  styles.inputContainer,
+                  shakeDurationError && { borderColor: "#ef4444" },
+                ]}
+              >
+                <Ionicons name="time-outline" size={20} color="#999999" />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  placeholder="5"
+                  placeholderTextColor="#999999"
+                  value={shakeDuration}
+                  onChangeText={(text) => {
+                    const digits = text.replace(/[^0-9]/g, "");
+                    setShakeDuration(digits);
+                    if (!digits) {
+                      setShakeDurationError("Enter a value between 1 and 60");
+                    } else {
+                      const n = parseInt(digits, 10);
+                      if (!Number.isInteger(n) || n < 1 || n > 60) {
+                        setShakeDurationError("Enter a value between 1 and 60");
+                      } else {
+                        setShakeDurationError(null);
+                      }
+                    }
+                  }}
+                />
+              </View>
+              {shakeDurationError && (
+                <Text style={styles.errorText}>{shakeDurationError}</Text>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Alert Mode Selection */}
@@ -365,12 +425,12 @@ export default function SetupPanicButton() {
         <TouchableOpacity
           style={styles.saveButton}
           activeOpacity={0.8}
-          onPress={handleSave}
-        >
-          <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
-          <Text style={styles.saveButtonText}>Save Panic Button</Text>
-        </TouchableOpacity>
-      </View>
+        onPress={handleSave}
+      >
+        <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
+        <Text style={styles.saveButtonText}>Save Panic Button</Text>
+      </TouchableOpacity>
+    </View>
 
       {/* Custom Alert */}
       <CustomAlert
@@ -558,6 +618,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666666",
     lineHeight: 20,
+  },
+  errorText: {
+    color: "#ef4444",
+    marginTop: 8,
+    fontSize: 12,
   },
   footer: {
     padding: 20,

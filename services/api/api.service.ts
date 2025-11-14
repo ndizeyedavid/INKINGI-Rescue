@@ -153,6 +153,8 @@ class ApiService {
 
     // Log error for debugging but don't crash
     if (__DEV__) {
+      console.log(API_CONFIG.BASE_URL);
+
       console.log("API Error handled:", {
         status: error.response?.status,
         message,
@@ -260,7 +262,10 @@ export const emergencyApi = {
 
   deleteVolunteer: (emergencyId: string, volunteerId: string) =>
     apiService.delete(
-      buildUrl(API_CONFIG.ENDPOINTS.DELETE_VOLUNTEER, { emergencyId, volunteerId })
+      buildUrl(API_CONFIG.ENDPOINTS.DELETE_VOLUNTEER, {
+        emergencyId,
+        volunteerId,
+      })
     ),
 };
 
@@ -290,25 +295,33 @@ export const postsApi = {
     apiService.get(buildUrl(API_CONFIG.ENDPOINTS.GET_POST_COMMENTS, { id })),
 
   createComment: (id: string, data: { content: string }) =>
-    apiService.post(buildUrl(API_CONFIG.ENDPOINTS.CREATE_COMMENT, { id }), data),
+    apiService.post(
+      buildUrl(API_CONFIG.ENDPOINTS.CREATE_COMMENT, { id }),
+      data
+    ),
 
   deleteComment: (postId: string, commentId: string) =>
-    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_COMMENT, { postId, commentId })),
+    apiService.delete(
+      buildUrl(API_CONFIG.ENDPOINTS.DELETE_COMMENT, { postId, commentId })
+    ),
 };
-
 
 // Notifications API
 export const notificationsApi = {
   getAll: () => apiService.get(API_CONFIG.ENDPOINTS.GET_ALL_NOTIFICATIONS),
-  
+
   markAsRead: (id: string) =>
-    apiService.patch(buildUrl(API_CONFIG.ENDPOINTS.MARK_NOTIFICATION_READ, { id })),
-  
+    apiService.patch(
+      buildUrl(API_CONFIG.ENDPOINTS.MARK_NOTIFICATION_READ, { id })
+    ),
+
   markAllAsRead: () =>
     apiService.patch(API_CONFIG.ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ),
-  
+
   delete: (id: string) =>
-    apiService.delete(buildUrl(API_CONFIG.ENDPOINTS.DELETE_NOTIFICATION, { id })),
+    apiService.delete(
+      buildUrl(API_CONFIG.ENDPOINTS.DELETE_NOTIFICATION, { id })
+    ),
 };
 
 // Health API

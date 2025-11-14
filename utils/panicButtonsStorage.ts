@@ -7,6 +7,8 @@ export interface PanicButton {
   mode: string;
   icon: string;
   color: string;
+  savedAt: string;
+  shakeDurationSeconds?: number;
 }
 
 const STORAGE_KEY = "@panic_buttons";
@@ -31,12 +33,13 @@ export const panicButtonsStorage = {
   /**
    * Save a new panic button
    */
-  async saveButton(button: Omit<PanicButton, "id">): Promise<PanicButton> {
+  async saveButton(button: Omit<PanicButton, "id" | "savedAt">): Promise<PanicButton> {
     try {
       const buttons = await this.getButtons();
       const newButton: PanicButton = {
         ...button,
         id: Date.now().toString(),
+        savedAt: new Date().toISOString(),
       };
       buttons.push(newButton);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(buttons));
@@ -55,7 +58,7 @@ export const panicButtonsStorage = {
       const buttons = await this.getButtons();
       const index = buttons.findIndex((b) => b.id === id);
       if (index !== -1) {
-        buttons[index] = { ...buttons[index], ...updates };
+        buttons[index] = { ...buttons[index], ...updates, savedAt: new Date().toISOString() };
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(buttons));
       }
     } catch (error) {
