@@ -19,7 +19,9 @@ export default function SetupPanicButton() {
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
   const [selectedMode, setSelectedMode] = useState<string | null>("loud");
   const [shakeDuration, setShakeDuration] = useState<string>("5");
-  const [shakeDurationError, setShakeDurationError] = useState<string | null>(null);
+  const [shakeDurationError, setShakeDurationError] = useState<string | null>(
+    null
+  );
 
   // Alert states
   const [alertVisible, setAlertVisible] = useState(false);
@@ -154,7 +156,10 @@ export default function SetupPanicButton() {
       };
       const payload =
         selectedTrigger === "shake"
-          ? { ...basePayload, shakeDurationSeconds: parseInt(shakeDuration, 10) }
+          ? {
+              ...basePayload,
+              shakeDurationSeconds: parseInt(shakeDuration, 10),
+            }
           : basePayload;
 
       await panicButtonsStorage.saveButton(payload);
@@ -317,7 +322,9 @@ export default function SetupPanicButton() {
           </View>
           {selectedTrigger === "shake" && (
             <View style={{ marginTop: 12 }}>
-              <Text style={styles.inputLabel}>Shake Detection Duration (seconds)</Text>
+              <Text style={styles.inputLabel}>
+                Shake Detection Duration (cycles)
+              </Text>
               <View
                 style={[
                   styles.inputContainer,
@@ -425,12 +432,12 @@ export default function SetupPanicButton() {
         <TouchableOpacity
           style={styles.saveButton}
           activeOpacity={0.8}
-        onPress={handleSave}
-      >
-        <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
-        <Text style={styles.saveButtonText}>Save Panic Button</Text>
-      </TouchableOpacity>
-    </View>
+          onPress={handleSave}
+        >
+          <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
+          <Text style={styles.saveButtonText}>Save Panic Button</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Custom Alert */}
       <CustomAlert

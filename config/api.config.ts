@@ -12,7 +12,7 @@ export const USE_MOCK_AUTH = false;
 export const API_CONFIG = {
   // Development
   BASE_URL: __DEV__
-    ? "http://192.168.137.1:3000" // Local development server
+    ? "http://DESKTOP-71JSF5O:3000" // Local development server
     : "https://your-production-api.com", // Production server
 
   TIMEOUT: 30000, // 2 minutes

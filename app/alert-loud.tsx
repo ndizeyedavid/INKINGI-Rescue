@@ -1,9 +1,10 @@
+import { shakeEmergencyService } from "@/services/shakeEmergency.service";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Brightness from "expo-brightness";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -15,10 +16,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { shakeEmergencyService } from "@/services/shakeEmergency.service";
 
 export default function AlertLoud() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const emergencyType = params.emergencyType as string | undefined;
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [originalBrightness, setOriginalBrightness] = useState<number>(0.5);
   const [emergencySubmitted, setEmergencySubmitted] = useState(false);
@@ -88,24 +90,31 @@ export default function AlertLoud() {
 
   const initializeEmergency = async () => {
     try {
-      console.log("🚨 SHAKE EMERGENCY DETECTED - Starting automatic emergency submission...");
-      
+      console.log(
+        "🚨 SHAKE EMERGENCY DETECTED - Starting automatic emergency submission..."
+      );
+
       // Request camera permission if not granted
       if (!cameraPermission?.granted) {
         console.log("Requesting camera permission...");
         const result = await requestCameraPermission();
         console.log("Camera permission result:", result?.granted);
-        
+
         // Wait a bit for camera to initialize after permission granted
         if (result?.granted) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
-      // Execute shake emergency flow with camera ref
+      // Execute shake emergency flow with camera ref and emergency type
       console.log("Camera ref available:", !!cameraRef.current);
+      console.log(
+        "Emergency type from panic button:",
+        emergencyType || "not specified"
+      );
       const success = await shakeEmergencyService.executeShakeEmergency(
-        cameraRef.current
+        cameraRef.current,
+        emergencyType
       );
 
       setEmergencySubmitted(success);
@@ -259,13 +268,23 @@ export default function AlertLoud() {
           {/* Status Indicators */}
           <View style={styles.statusContainer}>
             <View style={styles.statusItem}>
-              <Ionicons 
-                name={isProcessing ? "hourglass" : emergencySubmitted ? "checkmark-circle" : "close-circle"} 
-                size={32} 
-                color="#ffffff" 
+              <Ionicons
+                name={
+                  isProcessing
+                    ? "hourglass"
+                    : emergencySubmitted
+                      ? "checkmark-circle"
+                      : "close-circle"
+                }
+                size={32}
+                color="#ffffff"
               />
               <Text style={styles.statusText}>
-                {isProcessing ? "Submitting Emergency..." : emergencySubmitted ? "Emergency Submitted" : "Submission Failed"}
+                {isProcessing
+                  ? "Submitting Emergency..."
+                  : emergencySubmitted
+                    ? "Emergency Submitted"
+                    : "Submission Failed"}
               </Text>
             </View>
             <View style={styles.statusItem}>
@@ -286,7 +305,7 @@ export default function AlertLoud() {
           <View style={styles.infoContainer}>
             <Ionicons name="information-circle" size={24} color="#ffffff" />
             <Text style={styles.infoText}>
-              {emergencySubmitted 
+              {emergencySubmitted
                 ? "Emergency data submitted successfully. Responders have been notified with your location, audio, and photo."
                 : "Collecting emergency data automatically. Your location, audio, and photo are being captured."}
             </Text>

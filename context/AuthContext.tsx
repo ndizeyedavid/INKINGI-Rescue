@@ -143,10 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
       if (response.success && response.data) {
-        const { token, refreshToken, user: userData } = response.data;
+        const { auth_token, refreshToken, user: userData } = response.data;
 
         // Store tokens securely
-        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("authToken", auth_token);
         if (refreshToken) {
           await AsyncStorage.setItem("refreshToken", refreshToken);
         }

@@ -3,7 +3,7 @@ import PageHeader from "@/components/pageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { emergencyApi } from "@/services/api/api.service";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -34,8 +34,11 @@ interface Emergency {
   volunteers?: any[];
 }
 
+type DateFilter = "all" | "today" | "yesterday" | "7days" | "30days" | "90days";
+
 export default function SosPage() {
   const [activeTab, setActiveTab] = useState<"you" | "others">("you");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const router = useRouter();
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -130,6 +133,110 @@ export default function SosPage() {
     return emergency.user?.name || "Anonymous";
   };
 
+  // Get date range based on filter
+  const getDateRange = (filter: DateFilter): { start: Date; end: Date } => {
+    const now = new Date();
+    const end = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
+    let start: Date;
+
+    switch (filter) {
+      case "today":
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          0,
+          0,
+          0,
+          0
+        );
+        break;
+      case "yesterday":
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 1,
+          0,
+          0,
+          0,
+          0
+        );
+        end.setDate(end.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "7days":
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 7,
+          0,
+          0,
+          0,
+          0
+        );
+        break;
+      case "30days":
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 30,
+          0,
+          0,
+          0,
+          0
+        );
+        break;
+      case "90days":
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 90,
+          0,
+          0,
+          0,
+          0
+        );
+        break;
+      default:
+        // "all" - return a very old date to include everything
+        start = new Date(0);
+        break;
+    }
+
+    return { start, end };
+  };
+
+  // Filter emergencies based on date filter
+  const filterEmergenciesByDate = (emergencies: Emergency[]): Emergency[] => {
+    if (dateFilter === "all") {
+      return emergencies;
+    }
+
+    const { start, end } = getDateRange(dateFilter);
+
+    return emergencies.filter((emergency) => {
+      const emergencyDate = new Date(emergency.createdAt);
+      return emergencyDate >= start && emergencyDate <= end;
+    });
+  };
+
+  // Get filtered emergencies
+  const filteredMyEmergencies = useMemo(() => {
+    return filterEmergenciesByDate(myEmergencies);
+  }, [myEmergencies, dateFilter]);
+
+  const filteredOtherEmergencies = useMemo(() => {
+    return filterEmergenciesByDate(otherEmergencies);
+  }, [otherEmergencies, dateFilter]);
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title={t("sos.title")} />
@@ -167,13 +274,49 @@ export default function SosPage() {
         </TouchableOpacity>
       </View>
 
+      {/* Date Filter */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.dateFilterContainer}
+        contentContainerStyle={styles.dateFilterContent}
+      >
+        {[
+          { key: "all", label: "All" },
+          { key: "today", label: "Today" },
+          { key: "yesterday", label: "Yesterday" },
+          { key: "7days", label: "7 Days" },
+          { key: "30days", label: "30 Days" },
+          { key: "90days", label: "90 Days" },
+        ].map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
+            style={[
+              styles.dateFilterPill,
+              dateFilter === filter.key && styles.activeDateFilterPill,
+            ]}
+            onPress={() => setDateFilter(filter.key as DateFilter)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.dateFilterText,
+                dateFilter === filter.key && styles.activeDateFilterText,
+              ]}
+            >
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       {/* Content Area */}
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={["#e6491e"]} // Android
             tintColor="#e6491e" // iOS
@@ -196,8 +339,8 @@ export default function SosPage() {
             </TouchableOpacity>
           </View>
         ) : activeTab === "you" ? (
-          myEmergencies.length > 0 ? (
-            myEmergencies.map((emergency) => (
+          filteredMyEmergencies.length > 0 ? (
+            filteredMyEmergencies.map((emergency) => (
               <TouchableOpacity
                 key={emergency.id}
                 activeOpacity={0.7}
@@ -230,12 +373,14 @@ export default function SosPage() {
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>
-                No emergencies reported by you
+                {dateFilter === "all"
+                  ? "No emergencies reported by you"
+                  : `No emergencies reported by you in the selected period`}
               </Text>
             </View>
           )
-        ) : otherEmergencies.length > 0 ? (
-          otherEmergencies.map((emergency) => (
+        ) : filteredOtherEmergencies.length > 0 ? (
+          filteredOtherEmergencies.map((emergency) => (
             <TouchableOpacity
               key={emergency.id}
               activeOpacity={0.7}
@@ -267,7 +412,9 @@ export default function SosPage() {
         ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
-              No emergencies reported by others
+              {dateFilter === "all"
+                ? "No emergencies reported by others"
+                : `No emergencies reported by others in the selected period`}
             </Text>
           </View>
         )}
@@ -316,6 +463,36 @@ const styles = StyleSheet.create({
   },
   activePillText: {
     color: "#e6491e",
+    fontWeight: "600",
+  },
+  dateFilterContainer: {
+    marginHorizontal: 10,
+    marginBottom: 16,
+    maxHeight: 50,
+  },
+  dateFilterContent: {
+    paddingHorizontal: 4,
+    gap: 8,
+  },
+  dateFilterPill: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  activeDateFilterPill: {
+    backgroundColor: "#e6491e",
+    borderColor: "#e6491e",
+  },
+  dateFilterText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#666666",
+  },
+  activeDateFilterText: {
+    color: "#ffffff",
     fontWeight: "600",
   },
   content: {

@@ -1,6 +1,4 @@
 import { Audio } from "expo-av";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as FileSystem from "expo-file-system";
 import * as Location from "expo-location";
 import { emergencyApi } from "./api/api.service";
 
@@ -12,6 +10,7 @@ interface ShakeEmergencyData {
     longitude: number;
     address?: string;
   };
+  emergencyType?: string; // Backend emergency type (ACCIDENT, FIRE, MEDICAL, etc.)
 }
 
 export class ShakeEmergencyService {
@@ -23,7 +22,7 @@ export class ShakeEmergencyService {
   async recordAudio(): Promise<string | null> {
     try {
       console.log("Starting 5-second audio recording...");
-      
+
       // Request permissions
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
@@ -46,7 +45,7 @@ export class ShakeEmergencyService {
 
       // Stop after 5 seconds
       await new Promise((resolve) => setTimeout(resolve, 5000));
-      
+
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       this.recording = null;
@@ -65,7 +64,7 @@ export class ShakeEmergencyService {
   async getCurrentLocation(): Promise<ShakeEmergencyData["location"] | null> {
     try {
       console.log("Getting current location...");
-      
+
       // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -85,9 +84,10 @@ export class ShakeEmergencyService {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         });
-        
+
         if (addressResult) {
-          address = `${addressResult.street || ""}, ${addressResult.city || ""}, ${addressResult.region || ""}, ${addressResult.country || ""}`.trim();
+          address =
+            `${addressResult.street || ""}, ${addressResult.city || ""}, ${addressResult.region || ""}, ${addressResult.country || ""}`.trim();
         }
       } catch (error) {
         console.error("Failed to get address:", error);
@@ -114,14 +114,14 @@ export class ShakeEmergencyService {
   async capturePhoto(cameraRef: any): Promise<string | null> {
     try {
       console.log("Capturing photo...");
-      
+
       if (!cameraRef) {
         console.error("Camera ref not available");
         return null;
       }
 
       // Add a small delay to ensure camera is ready
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const photo = await cameraRef.takePictureAsync({
         quality: 0.8,
@@ -143,6 +143,23 @@ export class ShakeEmergencyService {
   }
 
   /**
+   * Map panic button type label to backend emergency type
+   */
+  private mapTypeToBackend(typeLabel: string): string {
+    const typeMap: Record<string, string> = {
+      Fire: "FIRE",
+      Medical: "MEDICAL",
+      Robbery: "ROBBERY",
+      Accident: "ACCIDENT",
+      Assault: "ASSAULT",
+      Flood: "FLOOD",
+      Quake: "QUAKE",
+      Other: "OTHER",
+    };
+    return typeMap[typeLabel] || "OTHER";
+  }
+
+  /**
    * Submit shake emergency to backend
    */
   async submitShakeEmergency(data: ShakeEmergencyData): Promise<boolean> {
@@ -153,15 +170,24 @@ export class ShakeEmergencyService {
 
       // Add emergency metadata (matching report-emergency.tsx format)
       // Backend only accepts: ACCIDENT, FIRE, MEDICAL, FLOOD, QUAKE, ROBBERY, ASSAULT, OTHER
-      formData.append("type", "OTHER");
+      const emergencyType = data.emergencyType
+        ? this.mapTypeToBackend(data.emergencyType)
+        : "OTHER";
+      formData.append("type", emergencyType);
       formData.append("title", "🚨 SHAKE ALERT - Immediate Help Needed");
-      formData.append("description", "URGENT: Emergency triggered by shake detection. User may be in immediate danger and unable to manually report. This is an EXTRA URGENT situation requiring immediate response.");
+      formData.append(
+        "description",
+        "URGENT: Emergency triggered by shake detection. User may be in immediate danger and unable to manually report. This is an EXTRA URGENT situation requiring immediate response."
+      );
 
       // Add location data
       if (data.location) {
         formData.append("latitude", data.location.latitude.toString());
         formData.append("longitude", data.location.longitude.toString());
-        formData.append("address", data.location.address || "Location captured");
+        formData.append(
+          "address",
+          data.location.address || "Location captured"
+        );
       } else {
         formData.append("address", "Location unavailable");
       }
@@ -185,7 +211,9 @@ export class ShakeEmergencyService {
           name: "shake_photo.jpg",
         } as any);
       } else {
-        console.warn("No photo URI available - photo may not have been captured");
+        console.warn(
+          "No photo URI available - photo may not have been captured"
+        );
       }
 
       // Submit to backend
@@ -207,11 +235,17 @@ export class ShakeEmergencyService {
   /**
    * Execute full shake emergency flow
    */
-  async executeShakeEmergency(cameraRef?: any): Promise<boolean> {
+  async executeShakeEmergency(
+    cameraRef?: any,
+    emergencyType?: string
+  ): Promise<boolean> {
     try {
       console.log("=== EXECUTING SHAKE EMERGENCY FLOW ===");
+      console.log("Emergency type:", emergencyType || "OTHER (default)");
 
-      const emergencyData: ShakeEmergencyData = {};
+      const emergencyData: ShakeEmergencyData = {
+        emergencyType: emergencyType,
+      };
 
       // Start audio and location in parallel
       const [audioUri, location] = await Promise.all([
