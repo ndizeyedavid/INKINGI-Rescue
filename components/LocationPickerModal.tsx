@@ -6,7 +6,6 @@ import {
   Animated,
   Modal,
   PanResponder,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -28,7 +27,7 @@ interface ILocationPickerModal {
   currentLocation: string;
 }
 
-const LOCATIONS = ["Kimisagara, KK 301", "Gitega", "Gatsata"];
+const LOCATIONS = [" "];
 
 export default function LocationPickerModal({
   visible,
@@ -40,7 +39,8 @@ export default function LocationPickerModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
   const [translateY] = useState(new Animated.Value(0));
-  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  const [userLocation, setUserLocation] =
+    useState<Location.LocationObject | null>(null);
   const [region, setRegion] = useState<Region>({
     latitude: -1.9441,
     longitude: 30.0619,
@@ -73,26 +73,26 @@ export default function LocationPickerModal({
         accuracy: Location.Accuracy.Balanced,
       });
       setUserLocation(location);
-      
+
       const newRegion = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
-      
+
       setRegion(newRegion);
       setMarkerCoordinate({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-      
+
       // Get address from coordinates
       const address = await Location.reverseGeocodeAsync({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-      
+
       if (address[0]) {
         const addr = address[0];
         const parts = [
@@ -105,14 +105,15 @@ export default function LocationPickerModal({
           addr.region,
           addr.postalCode,
         ].filter(Boolean);
-        
-        const formattedAddress = parts.length > 0 
-          ? parts.slice(0, 3).join(", ") 
-          : `${location.coords.latitude.toFixed(6)}, ${location.coords.longitude.toFixed(6)}`;
-        
+
+        const formattedAddress =
+          parts.length > 0
+            ? parts.slice(0, 3).join(", ")
+            : `${location.coords.latitude.toFixed(6)}, ${location.coords.longitude.toFixed(6)}`;
+
         setSelectedLocation(formattedAddress);
       }
-      
+
       mapRef.current?.animateToRegion(newRegion, 1000);
     } catch (error) {
       console.error("Location error:", error);
@@ -122,13 +123,13 @@ export default function LocationPickerModal({
   const handleMapPress = async (event: any) => {
     const coordinate = event.nativeEvent.coordinate;
     setMarkerCoordinate(coordinate);
-    
+
     try {
       const address = await Location.reverseGeocodeAsync({
         latitude: coordinate.latitude,
         longitude: coordinate.longitude,
       });
-      
+
       if (address[0]) {
         const addr = address[0];
         const parts = [
@@ -141,17 +142,20 @@ export default function LocationPickerModal({
           addr.region,
           addr.postalCode,
         ].filter(Boolean);
-        
-        const formattedAddress = parts.length > 0 
-          ? parts.slice(0, 3).join(", ") 
-          : `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`;
-        
+
+        const formattedAddress =
+          parts.length > 0
+            ? parts.slice(0, 3).join(", ")
+            : `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`;
+
         setSelectedLocation(formattedAddress);
       }
     } catch (error) {
       console.error("Reverse geocode error:", error);
       // Fallback to coordinates if reverse geocoding fails
-      setSelectedLocation(`${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+      setSelectedLocation(
+        `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`
+      );
     }
   };
 
@@ -260,7 +264,7 @@ export default function LocationPickerModal({
                 </View>
               </Marker>
             </MapView>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.trackLocationButton}
               onPress={getUserLocation}
               activeOpacity={0.8}
@@ -275,34 +279,6 @@ export default function LocationPickerModal({
             <Ionicons name="location-outline" size={20} color="#666666" />
             <Text style={styles.currentLocationText}>{currentLocation}</Text>
           </View>
-
-          {/* Location List */}
-          <ScrollView
-            style={styles.locationList}
-            showsVerticalScrollIndicator={false}
-          >
-            {filteredLocations.map((location, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.locationItem,
-                  selectedLocation === location && styles.selectedLocationItem,
-                ]}
-                onPress={() => setSelectedLocation(location)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.locationItemText,
-                    selectedLocation === location &&
-                      styles.selectedLocationItemText,
-                  ]}
-                >
-                  {location}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
 
           {/* Confirm Button */}
           <View style={styles.buttonContainer}>
@@ -376,7 +352,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 16,
     position: "relative",
-    height: 200,
+    height: 350,
     borderRadius: 12,
     overflow: "hidden",
   },

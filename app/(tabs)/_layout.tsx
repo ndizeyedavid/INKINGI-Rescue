@@ -29,10 +29,18 @@ export default function AppLayout() {
 
       if (response.success && response.data) {
         const emergencies = Array.isArray(response.data) ? response.data : [];
-        // Count emergencies with status 'reported' (pending)
-        const pendingCount = emergencies.filter(
-          (e: any) => e.status === "PENDING"
-        ).length;
+        // Count emergencies created today
+        const pendingCount = emergencies.filter((e: any) => {
+          if (!e?.createdAt) return false;
+          const createdDate = new Date(e.createdAt);
+          const now = new Date();
+          return (
+            createdDate.getFullYear() === now.getFullYear() &&
+            createdDate.getMonth() === now.getMonth() &&
+            createdDate.getDate() === now.getDate()
+          );
+        }).length;
+
         setPendingEmergenciesCount(pendingCount);
       }
     } catch (error) {

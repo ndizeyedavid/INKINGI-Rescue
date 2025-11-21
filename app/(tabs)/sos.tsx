@@ -38,7 +38,7 @@ type DateFilter = "all" | "today" | "yesterday" | "7days" | "30days" | "90days";
 
 export default function SosPage() {
   const [activeTab, setActiveTab] = useState<"you" | "others">("you");
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("today");
   const router = useRouter();
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -468,14 +468,14 @@ const styles = StyleSheet.create({
   dateFilterContainer: {
     marginHorizontal: 10,
     marginBottom: 16,
-    maxHeight: 50,
+    maxHeight: 35,
   },
   dateFilterContent: {
     paddingHorizontal: 4,
     gap: 8,
   },
   dateFilterPill: {
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: "#f0f0f0",
@@ -508,5 +508,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#999999",
+    textAlign: "center",
   },
 });

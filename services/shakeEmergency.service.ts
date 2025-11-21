@@ -30,11 +30,13 @@ export class ShakeEmergencyService {
         return null;
       }
 
-      // Configure audio mode
+      // Configure audio mode for simultaneous playback + recording
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
+        staysActiveInBackground: true,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
       });
 
       // Start recording
@@ -55,6 +57,22 @@ export class ShakeEmergencyService {
     } catch (error) {
       console.error("Failed to record audio:", error);
       return null;
+    } finally {
+      // Restore audio mode to playback-friendly defaults so the loud alert keeps playing
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: false,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (restoreError) {
+        console.warn(
+          "Failed to restore audio mode after recording:",
+          restoreError
+        );
+      }
     }
   }
 
@@ -248,23 +266,15 @@ export class ShakeEmergencyService {
       };
 
       // Start audio and location in parallel
-      const [audioUri, location] = await Promise.all([
+      const [audioUri, location, photoUri] = await Promise.all([
         this.recordAudio(),
         this.getCurrentLocation(),
+        cameraRef ? this.capturePhoto(cameraRef) : Promise.resolve(null),
       ]);
 
       emergencyData.audioUri = audioUri || undefined;
       emergencyData.location = location || undefined;
-
-      // Capture photo separately to ensure camera is ready
-      let photoUri = null;
-      if (cameraRef) {
-        console.log("Attempting to capture photo with camera ref...");
-        photoUri = await this.capturePhoto(cameraRef);
-        emergencyData.photoUri = photoUri || undefined;
-      } else {
-        console.warn("No camera ref provided - skipping photo capture");
-      }
+      emergencyData.photoUri = photoUri || undefined;
 
       console.log("Emergency data collected:", {
         hasAudio: !!emergencyData.audioUri,
