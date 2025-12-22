@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   View,
@@ -22,42 +21,46 @@ export default function SignInScreen() {
   const handleSignIn = async (email: string, password: string) => {
     // Validate inputs
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', "Please enter both email and password");
+      Alert.alert("Error", "Please enter both email and password");
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', "Please enter a valid email address");
+      Alert.alert("Invalid Email", "Please enter a valid email address");
       return;
     }
 
     setLoading(true);
     try {
       const result = await signIn(email, password);
-      
+
       if (result.success) {
         // Navigate to permission screen or main app
         router.replace("/(auth)/Permission");
       } else {
         // Show user-friendly error message
-        Alert.alert('Login Failed', result.error || "Failed to sign in. Please check your credentials and try again.");
+        Alert.alert(
+          "Login Failed",
+          result.error ||
+            "Failed to sign in. Please check your credentials and try again."
+        );
       }
     } catch (error: any) {
       // Catch any unexpected errors and show alert instead of crashing
-      console.error('Sign in error:', error);
-      Alert.alert('Error', error.message || "An unexpected error occurred. Please try again.");
+      console.error("Sign in error:", error);
+      Alert.alert(
+        "Error",
+        error.message || "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-[#f4f4f4]">
         <ScrollView>
           <View className="flex-1 justify-center p-6 mt-[96px]">

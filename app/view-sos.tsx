@@ -7,6 +7,7 @@ import { Audio, ResizeMode, Video } from "expo-av";
 import * as Location from "expo-location";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -79,6 +80,7 @@ export default function ViewSos() {
   const params = useLocalSearchParams();
   const emergencyId = params.emergencyId as string;
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const mapRef = useRef<MapView>(null);
   const [loading, setLoading] = useState(true);
@@ -141,7 +143,7 @@ export default function ViewSos() {
     try {
       setLoading(true);
       const response = await emergencyApi.getById(emergencyId);
-
+      console.log(response);
       if (response.success && response.data) {
         setEmergencyData(response.data);
 
@@ -425,24 +427,19 @@ export default function ViewSos() {
 
         showAlert(
           "success",
-          "Success!",
-          "Thank you for volunteering! The emergency reporter will be notified."
+          t("common.success"),
+          t("viewSos.volunteerSuccess")
         );
       } else {
         showAlert(
           "error",
-          "Error",
-          response.error ||
-            "Failed to submit volunteer request. Please try again."
+          t("common.error"),
+          response.error || t("viewSos.volunteerError")
         );
       }
     } catch (error) {
       console.error("Volunteer error:", error);
-      showAlert(
-        "error",
-        "Error",
-        "An error occurred while submitting your volunteer request."
-      );
+      showAlert("error", t("common.error"), t("viewSos.volunteerError"));
     } finally {
       setIsSubmittingVolunteer(false);
     }
@@ -507,15 +504,15 @@ export default function ViewSos() {
     if (!myVolunteer) return;
 
     Alert.alert(
-      "Remove Volunteer Request",
-      "Are you sure you want to remove your volunteer request for this emergency?",
+      t("viewSos.removeVolunteer"),
+      t("viewSos.removeVolunteerConfirm"),
       [
         {
-          text: "Cancel",
+          text: t("common.cancel"),
           style: "cancel",
         },
         {
-          text: "Yes, Remove",
+          text: t("viewSos.removeVolunteerConfirm"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -532,14 +529,14 @@ export default function ViewSos() {
 
                 showAlert(
                   "success",
-                  "Removed",
-                  "Your volunteer request has been removed."
+                  t("common.success"),
+                  t("viewSos.removeVolunteerSuccess")
                 );
               } else {
                 showAlert(
                   "error",
-                  "Error",
-                  response.error || "Failed to remove volunteer request."
+                  t("common.error"),
+                  response.error || t("viewSos.removeVolunteerError")
                 );
               }
             } catch (error) {
@@ -560,7 +557,7 @@ export default function ViewSos() {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color="#e6491e" />
-        <Text style={styles.loadingText}>Loading emergency details...</Text>
+        <Text style={styles.loadingText}>{t("viewSos.loadingDetails")}</Text>
       </View>
     );
   }
@@ -569,7 +566,7 @@ export default function ViewSos() {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <Ionicons name="alert-circle-outline" size={64} color="#999999" />
-        <Text style={styles.errorText}>Emergency not found</Text>
+        <Text style={styles.errorText}>{t("viewSos.emergencyNotFound")}</Text>
       </View>
     );
   }
@@ -624,8 +621,11 @@ export default function ViewSos() {
             color="#ffffff"
           />
           <Text style={styles.statusText}>
-            {emergencyData.status.charAt(0).toUpperCase() +
-              emergencyData.status.slice(1)}
+            {emergencyData.status === "reported"
+              ? t("viewSos.reported")
+              : emergencyData.status === "dispatched"
+                ? t("viewSos.dispatched")
+                : t("viewSos.resolved")}
           </Text>
         </View>
 
@@ -688,8 +688,8 @@ export default function ViewSos() {
             <Ionicons name="navigate" size={16} color="#666666" />
             <Text style={styles.distanceText}>
               {distance > 0
-                ? `${distance.toFixed(1)} km away${duration > 0 ? ` • ~${Math.round(duration)} min Foot` : ""}`
-                : "Calculating route..."}
+                ? `${distance.toFixed(1)} ${t("viewSos.kmAway")}${duration > 0 ? ` • ~${Math.round(duration)} ${t("viewSos.minFoot")}` : ""}`
+                : t("viewSos.calculatingRoute")}
             </Text>
           </View>
         </View>
@@ -711,7 +711,9 @@ export default function ViewSos() {
               <Ionicons name="people-outline" size={16} color="#999999" />
               <Text style={styles.metaText}>
                 {volunteers.length}{" "}
-                {volunteers.length === 1 ? "volunteer" : "volunteers"}
+                {volunteers.length === 1
+                  ? t("sos.volunteer")
+                  : t("sos.volunteers")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -722,7 +724,9 @@ export default function ViewSos() {
               </Text>
             </View>
             <View style={styles.reporterInfo}>
-              <Text style={styles.reporterLabel}>Reported by</Text>
+              <Text style={styles.reporterLabel}>
+                {t("viewSos.reportedBy")}
+              </Text>
               <Text style={styles.reporterName}>
                 {emergencyData.user?.firstName || "Unknown User"}
               </Text>
@@ -733,7 +737,7 @@ export default function ViewSos() {
         {/* Description Section */}
         {emergencyData.description && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.sectionTitle}>{t("viewSos.description")}</Text>
             <Text style={styles.descriptionText}>
               {emergencyData.description}
             </Text>
@@ -743,7 +747,9 @@ export default function ViewSos() {
         {/* Images Section */}
         {images.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Images ({images.length})</Text>
+            <Text style={styles.sectionTitle}>
+              {t("reportEmergency.photos")} ({images.length})
+            </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.imagesGrid}>
                 {images.map((file) => (
@@ -764,7 +770,9 @@ export default function ViewSos() {
         {/* Videos Section */}
         {videos.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Videos ({videos.length})</Text>
+            <Text style={styles.sectionTitle}>
+              {t("reportEmergency.videos")} ({videos.length})
+            </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.imagesGrid}>
                 {videos.map((file) => (
@@ -789,7 +797,7 @@ export default function ViewSos() {
         {audios.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              Audio Recordings ({audios.length})
+              {t("reportEmergency.audioRecordings")} ({audios.length})
             </Text>
             {audios.map((file, index) => (
               <TouchableOpacity
@@ -813,8 +821,8 @@ export default function ViewSos() {
                   ]}
                 >
                   {playingAudio === file.id
-                    ? "Playing..."
-                    : `Audio recording ${index + 1}`}
+                    ? t("viewSos.playing")
+                    : `${t("viewSos.audioRecording")} ${index + 1}`}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -825,24 +833,21 @@ export default function ViewSos() {
         <View style={styles.tipsContainer}>
           <View style={styles.tipsHeader}>
             <Ionicons name="sparkles" size={20} color="#e6491e" />
-            <Text style={styles.tipsHeaderText}>INKINGI AI Safety Tips</Text>
+            <Text style={styles.tipsHeaderText}>{t("viewSos.aiTips")}</Text>
           </View>
 
           {loadingTips ? (
             <View style={styles.tipsLoadingContainer}>
               <ActivityIndicator size="small" color="#e6491e" />
               <Text style={styles.tipsLoadingText}>
-                Generating personalized safety tips...
+                {t("viewSos.generatingTips")}
               </Text>
             </View>
           ) : (
             <>
-              <Text style={styles.tipTitle}>
-                Safety guidance for this emergency
-              </Text>
+              <Text style={styles.tipTitle}>{t("viewSos.safetyGuidance")}</Text>
               <Text style={styles.tipSubtitle}>
-                AI-generated tips based on the emergency type, location, and
-                situation.
+                {t("viewSos.aiGeneratedTips")}
               </Text>
 
               <View style={styles.tipsList}>
@@ -869,7 +874,7 @@ export default function ViewSos() {
           >
             <Ionicons name="people" size={24} color="#ffffff" />
             <Text style={styles.volunteerButtonText}>
-              View Volunteers ({volunteers.length})
+              {t("viewSos.viewVolunteers")} ({volunteers.length})
             </Text>
           </TouchableOpacity>
         ) : (
@@ -892,7 +897,9 @@ export default function ViewSos() {
               color="#ffffff"
             />
             <Text style={styles.volunteerButtonText}>
-              {isVolunteered ? "Already Volunteered" : "Volunteer to Help"}
+              {isVolunteered
+                ? t("viewSos.alreadyVolunteered")
+                : t("viewSos.volunteerToHelp")}
             </Text>
           </TouchableOpacity>
         )}
@@ -995,7 +1002,7 @@ export default function ViewSos() {
             <View style={styles.volunteersModalHandle} />
             <View style={styles.volunteersModalHeader}>
               <Text style={styles.volunteersModalTitle}>
-                Volunteers ({volunteers.length})
+                {t("viewSos.volunteers")} ({volunteers.length})
               </Text>
               <TouchableOpacity
                 onPress={() => setShowVolunteersModal(false)}
@@ -1035,7 +1042,8 @@ export default function ViewSos() {
                           : volunteer.user?.firstName || "Volunteer"}
                       </Text>
                       <Text style={styles.volunteerTime}>
-                        Volunteered {formatTimeAgo(volunteer.createdAt)}
+                        {t("viewSos.volunteered")}{" "}
+                        {formatTimeAgo(volunteer.createdAt)}
                       </Text>
                     </View>
                     <Ionicons
@@ -1049,10 +1057,10 @@ export default function ViewSos() {
                 <View style={styles.emptyVolunteersContainer}>
                   <Ionicons name="people-outline" size={48} color="#cccccc" />
                   <Text style={styles.emptyVolunteersText}>
-                    No volunteers yet
+                    {t("viewSos.noVolunteers")}
                   </Text>
                   <Text style={styles.emptyVolunteersSubtext}>
-                    Be the first to volunteer for this emergency
+                    {t("viewSos.beFirstVolunteer")}
                   </Text>
                 </View>
               )}
@@ -1078,7 +1086,7 @@ export default function ViewSos() {
             {/* Header */}
             <View style={styles.volunteerDetailsHeader}>
               <Text style={styles.volunteerDetailsTitle}>
-                Volunteer Details
+                {t("viewSos.volunteerDetails")}
               </Text>
               <TouchableOpacity
                 onPress={() => setShowVolunteerDetailsModal(false)}
@@ -1148,7 +1156,7 @@ export default function ViewSos() {
                           color="#e6491e"
                         />
                         <Text style={styles.volunteerDetailsSectionTitle}>
-                          Skills
+                          {t("viewSos.skills")}
                         </Text>
                       </View>
                       <View style={styles.skillsContainer}>
@@ -1175,7 +1183,7 @@ export default function ViewSos() {
                           color="#e6491e"
                         />
                         <Text style={styles.volunteerDetailsSectionTitle}>
-                          Message
+                          {t("viewSos.message")}
                         </Text>
                       </View>
                       <Text style={styles.volunteerDetailsMessage}>

@@ -6,6 +6,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Animated,
   ScrollView,
@@ -19,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AlertLoud() {
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useLocalSearchParams();
   const emergencyType = params.emergencyType as string | undefined;
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -253,15 +255,15 @@ export default function AlertLoud() {
 
           {/* Alert Text */}
           <Animated.View style={{ opacity: flashAnim }}>
-            <Text style={styles.alertTitle}>EMERGENCY ALERT</Text>
-            <Text style={styles.alertSubtitle}>Help Signal Active</Text>
+            <Text style={styles.alertTitle}>{t("alertLoud.title")}</Text>
+            <Text style={styles.alertSubtitle}>{t("alertLoud.subtitle")}</Text>
           </Animated.View>
 
           {/* Volume Warning */}
           <View style={styles.volumeWarning}>
             <Ionicons name="volume-high" size={24} color="#ffffff" />
             <Text style={styles.volumeWarningText}>
-              Please ensure your device volume is turned up for maximum alert
+              {t("alertLoud.volumeWarning")}
             </Text>
           </View>
 
@@ -281,23 +283,29 @@ export default function AlertLoud() {
               />
               <Text style={styles.statusText}>
                 {isProcessing
-                  ? "Submitting Emergency..."
+                  ? t("alertLoud.submitting")
                   : emergencySubmitted
-                    ? "Emergency Submitted"
-                    : "Submission Failed"}
+                    ? t("alertLoud.submitted")
+                    : t("alertLoud.failed")}
               </Text>
             </View>
             <View style={styles.statusItem}>
               <Ionicons name="location" size={32} color="#ffffff" />
-              <Text style={styles.statusText}>Location Captured</Text>
+              <Text style={styles.statusText}>
+                {t("alertLoud.locationCaptured")}
+              </Text>
             </View>
             <View style={styles.statusItem}>
               <Ionicons name="mic" size={32} color="#ffffff" />
-              <Text style={styles.statusText}>Audio Recorded (5s)</Text>
+              <Text style={styles.statusText}>
+                {t("alertLoud.audioRecorded")}
+              </Text>
             </View>
             <View style={styles.statusItem}>
               <Ionicons name="camera" size={32} color="#ffffff" />
-              <Text style={styles.statusText}>Photo Captured</Text>
+              <Text style={styles.statusText}>
+                {t("alertLoud.photoCaptured")}
+              </Text>
             </View>
           </View>
 
@@ -306,8 +314,8 @@ export default function AlertLoud() {
             <Ionicons name="information-circle" size={24} color="#ffffff" />
             <Text style={styles.infoText}>
               {emergencySubmitted
-                ? "Emergency data submitted successfully. Responders have been notified with your location, audio, and photo."
-                : "Collecting emergency data automatically. Your location, audio, and photo are being captured."}
+                ? t("alertLoud.successMessage")
+                : t("alertLoud.collectingMessage")}
             </Text>
           </View>
         </View>
@@ -332,7 +340,7 @@ export default function AlertLoud() {
           onPress={handleStopAlert}
         >
           <Ionicons name="stop-circle" size={32} color="#e6491e" />
-          <Text style={styles.stopButtonText}>Stop Alert</Text>
+          <Text style={styles.stopButtonText}>{t("alertLoud.stopAlert")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

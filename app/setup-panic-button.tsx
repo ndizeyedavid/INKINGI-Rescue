@@ -3,6 +3,7 @@ import { panicButtonsStorage } from "@/utils/panicButtonsStorage";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
 
 export default function SetupPanicButton() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [emergencyType, setEmergencyType] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
@@ -38,24 +40,39 @@ export default function SetupPanicButton() {
   });
 
   const emergencyTypes = [
-    { id: "fire", label: "Fire", icon: "fire", color: "#FF6B35" },
+    {
+      id: "fire",
+      label: t("reportEmergency.fire"),
+      icon: "fire",
+      color: "#FF6B35",
+    },
     {
       id: "medical",
-      label: "Medical",
+      label: t("reportEmergency.medical"),
       icon: "hand-holding-heart",
       color: "#ef4444",
     },
     {
       id: "robbery",
-      label: "Robbery",
+      label: t("reportEmergency.robbery"),
       icon: "people-robbery",
       color: "#e6491e",
     },
-    { id: "accident", label: "Accident", icon: "car-burst", color: "#f59e0b" },
-    { id: "assault", label: "Assault", icon: "user-injured", color: "#dc2626" },
+    {
+      id: "accident",
+      label: t("reportEmergency.accident"),
+      icon: "car-burst",
+      color: "#f59e0b",
+    },
+    {
+      id: "assault",
+      label: t("reportEmergency.assault"),
+      icon: "user-injured",
+      color: "#dc2626",
+    },
     {
       id: "other",
-      label: "Other",
+      label: t("reportEmergency.other"),
       icon: "ellipsis",
       color: "#6b7280",
     },
@@ -64,21 +81,25 @@ export default function SetupPanicButton() {
   const triggers = [
     // { id: "volume-3", label: "Volume Down × 3", icon: "volume-low" },
     // { id: "volume-5", label: "Volume Down × 5", icon: "volume-medium" },
-    { id: "shake", label: "Shake Device", icon: "phone-portrait" },
+    {
+      id: "shake",
+      label: t("setupPanicButton.shakeDevice"),
+      icon: "phone-portrait",
+    },
   ];
 
   const modes = [
     {
       id: "loud",
-      label: "Loud",
-      description: "Siren and alerts",
+      label: t("setupPanicButton.loud"),
+      description: t("setupPanicButton.loudDescription"),
       icon: "volume-high",
       color: "#ef4444",
     },
     {
       id: "silent",
-      label: "Silent",
-      description: "No sound, discreet",
+      label: t("setupPanicButton.silent"),
+      description: t("setupPanicButton.silentDescription"),
       icon: "volume-mute",
       color: "#6b7280",
     },
@@ -98,21 +119,25 @@ export default function SetupPanicButton() {
     if (!selectedType && !emergencyType.trim()) {
       showAlert(
         "warning",
-        "Missing Information",
-        "Please select an emergency type"
+        t("common.warning"),
+        t("reportEmergency.selectTypeError")
       );
       return;
     }
     if (!selectedTrigger) {
       showAlert(
         "warning",
-        "Missing Information",
-        "Please select a trigger method"
+        t("common.warning"),
+        t("setupPanicButton.selectTrigger")
       );
       return;
     }
     if (!selectedMode) {
-      showAlert("warning", "Missing Information", "Please select alert mode");
+      showAlert(
+        "warning",
+        t("common.warning"),
+        t("setupPanicButton.selectMode")
+      );
       return;
     }
 
@@ -120,11 +145,11 @@ export default function SetupPanicButton() {
       const v = shakeDuration.trim();
       const n = parseInt(v, 10);
       if (!v || !Number.isInteger(n) || n < 1 || n > 60) {
-        setShakeDurationError("Enter a value between 1 and 60");
+        setShakeDurationError(t("setupPanicButton.durationError"));
         showAlert(
           "warning",
-          "Invalid Duration",
-          "Please enter 1-60 seconds for shake detection"
+          t("common.warning"),
+          t("setupPanicButton.durationError")
         );
         return;
       }
@@ -166,19 +191,15 @@ export default function SetupPanicButton() {
 
       showAlert(
         "success",
-        "Success",
-        "Panic button configured successfully",
+        t("common.success"),
+        t("setupPanicButton.success"),
         () => {
           setAlertVisible(false);
           router.back();
         }
       );
     } catch (error) {
-      showAlert(
-        "error",
-        "Error",
-        "Failed to save panic button. Please try again."
-      );
+      showAlert("error", t("common.error"), t("setupPanicButton.error"));
     }
   };
 
@@ -218,7 +239,9 @@ export default function SetupPanicButton() {
 
         {/* Emergency Type Selection */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Emergency Type *</Text>
+          <Text style={styles.inputLabel}>
+            {t("setupPanicButton.selectType")} *
+          </Text>
           <View style={styles.typesGrid}>
             {emergencyTypes.map((type) => (
               <TouchableOpacity
@@ -265,7 +288,9 @@ export default function SetupPanicButton() {
         {/* Custom Emergency Type */}
         {selectedType === "other" && (
           <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Specify Emergency Type</Text>
+            <Text style={styles.inputLabel}>
+              {t("reportEmergency.otherType")}
+            </Text>
             <View style={styles.inputContainer}>
               <Ionicons name="create-outline" size={20} color="#999999" />
               <TextInput
@@ -281,9 +306,11 @@ export default function SetupPanicButton() {
 
         {/* Trigger Selection */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Trigger Method *</Text>
+          <Text style={styles.inputLabel}>
+            {t("setupPanicButton.selectTrigger")} *
+          </Text>
           <Text style={styles.inputDescription}>
-            Choose how to activate this panic button
+            {t("setupPanicButton.selectTrigger")}
           </Text>
           <View style={styles.triggersList}>
             {triggers.map((trigger) => (
@@ -323,7 +350,7 @@ export default function SetupPanicButton() {
           {selectedTrigger === "shake" && (
             <View style={{ marginTop: 12 }}>
               <Text style={styles.inputLabel}>
-                Shake Detection Duration (cycles)
+                {t("setupPanicButton.shakeDuration")}
               </Text>
               <View
                 style={[
@@ -342,11 +369,15 @@ export default function SetupPanicButton() {
                     const digits = text.replace(/[^0-9]/g, "");
                     setShakeDuration(digits);
                     if (!digits) {
-                      setShakeDurationError("Enter a value between 1 and 60");
+                      setShakeDurationError(
+                        t("setupPanicButton.durationError")
+                      );
                     } else {
                       const n = parseInt(digits, 10);
                       if (!Number.isInteger(n) || n < 1 || n > 60) {
-                        setShakeDurationError("Enter a value between 1 and 60");
+                        setShakeDurationError(
+                          t("setupPanicButton.durationError")
+                        );
                       } else {
                         setShakeDurationError(null);
                       }
@@ -363,9 +394,11 @@ export default function SetupPanicButton() {
 
         {/* Alert Mode Selection */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Alert Mode *</Text>
+          <Text style={styles.inputLabel}>
+            {t("setupPanicButton.selectMode")} *
+          </Text>
           <Text style={styles.inputDescription}>
-            Choose how the alert will be triggered
+            {t("setupPanicButton.selectMode")}
           </Text>
           <View style={styles.modesList}>
             {modes.map((mode) => (
@@ -420,10 +453,7 @@ export default function SetupPanicButton() {
         {/* Info Card */}
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={20} color="#e6491e" />
-          <Text style={styles.infoText}>
-            Panic buttons work even when your phone is locked. Test your panic
-            button regularly to ensure it works properly.
-          </Text>
+          <Text style={styles.infoText}>{t("setupPanicButton.infoText")}</Text>
         </View>
       </ScrollView>
 
@@ -435,7 +465,9 @@ export default function SetupPanicButton() {
           onPress={handleSave}
         >
           <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
-          <Text style={styles.saveButtonText}>Save Panic Button</Text>
+          <Text style={styles.saveButtonText}>
+            {t("setupPanicButton.save")}
+          </Text>
         </TouchableOpacity>
       </View>
 

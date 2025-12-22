@@ -282,12 +282,12 @@ export default function SosPage() {
         contentContainerStyle={styles.dateFilterContent}
       >
         {[
-          { key: "all", label: "All" },
-          { key: "today", label: "Today" },
-          { key: "yesterday", label: "Yesterday" },
-          { key: "7days", label: "7 Days" },
-          { key: "30days", label: "30 Days" },
-          { key: "90days", label: "90 Days" },
+          { key: "all", label: t("dateFilters.all") },
+          { key: "today", label: t("dateFilters.today") },
+          { key: "yesterday", label: t("dateFilters.yesterday") },
+          { key: "7days", label: t("dateFilters.7days") },
+          { key: "30days", label: t("dateFilters.30days") },
+          { key: "90days", label: t("dateFilters.90days") },
         ].map((filter) => (
           <TouchableOpacity
             key={filter.key}
@@ -374,8 +374,8 @@ export default function SosPage() {
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>
                 {dateFilter === "all"
-                  ? "No emergencies reported by you"
-                  : `No emergencies reported by you in the selected period`}
+                  ? t("dateFilters.noEmergenciesYou")
+                  : t("dateFilters.noEmergenciesPeriod")}
               </Text>
             </View>
           )
@@ -413,8 +413,8 @@ export default function SosPage() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
               {dateFilter === "all"
-                ? "No emergencies reported by others"
-                : `No emergencies reported by others in the selected period`}
+                ? t("dateFilters.noEmergenciesOthers")
+                : t("dateFilters.noEmergenciesPeriod")}
             </Text>
           </View>
         )}

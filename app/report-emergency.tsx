@@ -6,6 +6,7 @@ import { Audio, Video } from "expo-av";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   KeyboardAvoidingView,
@@ -36,6 +37,7 @@ interface EmergencyOption {
 
 export default function ReportEmergency() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState<EmergencyType | null>(null);
   const [otherEmergencyType, setOtherEmergencyType] = useState("");
   const [location, setLocation] = useState("Kimisagara, KK 301");
@@ -71,14 +73,34 @@ export default function ReportEmergency() {
   });
 
   const emergencyTypes: EmergencyOption[] = [
-    { type: "accident", label: "Accident", icon: "car-burst" },
-    { type: "fire", label: "Fire", icon: "fire" },
-    { type: "medical", label: "Medical", icon: "hand-holding-heart" },
-    { type: "flood", label: "Flood", icon: "house-flood-water" },
-    { type: "quake", label: "Quake", icon: "house-crack" },
-    { type: "robbery", label: "Robbery", icon: "people-robbery" },
-    { type: "assault", label: "Assault", icon: "user-injured" },
-    { type: "other", label: "Other", icon: "ellipsis" },
+    {
+      type: "accident",
+      label: t("reportEmergency.accident"),
+      icon: "car-burst",
+    },
+    { type: "fire", label: t("reportEmergency.fire"), icon: "fire" },
+    {
+      type: "medical",
+      label: t("reportEmergency.medical"),
+      icon: "hand-holding-heart",
+    },
+    {
+      type: "flood",
+      label: t("reportEmergency.flood"),
+      icon: "house-flood-water",
+    },
+    { type: "quake", label: t("reportEmergency.quake"), icon: "house-crack" },
+    {
+      type: "robbery",
+      label: t("reportEmergency.robbery"),
+      icon: "people-robbery",
+    },
+    {
+      type: "assault",
+      label: t("reportEmergency.assault"),
+      icon: "user-injured",
+    },
+    { type: "other", label: t("reportEmergency.other"), icon: "ellipsis" },
   ];
 
   // Map frontend types to backend enum values
@@ -116,8 +138,8 @@ export default function ReportEmergency() {
       setAlert({
         visible: true,
         type: "error",
-        title: "Permission Denied",
-        message: "Camera permission is required to take photos.",
+        title: t("common.error"),
+        message: t("reportEmergency.cameraPermissionError"),
       });
       return;
     }
@@ -139,8 +161,8 @@ export default function ReportEmergency() {
       setAlert({
         visible: true,
         type: "error",
-        title: "Permission Denied",
-        message: "Camera permission is required to record videos.",
+        title: t("common.error"),
+        message: t("reportEmergency.videoPermissionError"),
       });
       return;
     }
@@ -163,8 +185,8 @@ export default function ReportEmergency() {
         setAlert({
           visible: true,
           type: "error",
-          title: "Permission Denied",
-          message: "Microphone permission is required to record audio.",
+          title: t("common.error"),
+          message: t("reportEmergency.audioPermissionError"),
         });
         return;
       }
@@ -332,8 +354,8 @@ export default function ReportEmergency() {
       setAlert({
         visible: true,
         type: "warning",
-        title: "Required Field",
-        message: "Please select an emergency type to continue.",
+        title: t("reportEmergency.requiredField"),
+        message: t("reportEmergency.selectTypeError"),
       });
       return;
     }
@@ -342,8 +364,8 @@ export default function ReportEmergency() {
       setAlert({
         visible: true,
         type: "warning",
-        title: "Required Field",
-        message: "Please specify the emergency type.",
+        title: t("reportEmergency.requiredField"),
+        message: t("reportEmergency.selectTypeError"),
       });
       return;
     }
@@ -394,10 +416,9 @@ export default function ReportEmergency() {
         setAlert({
           visible: true,
           type: "success",
-          title: "Help is on the way.",
-          message:
-            "Your emergency report has been submitted successfully. Stay safe!",
-          buttonText: "View Emergency",
+          title: t("reportEmergency.successTitle"),
+          message: t("reportEmergency.successMessage"),
+          buttonText: t("reportEmergency.viewEmergency"),
           onButtonPress: () => {
             setAlert({ ...alert, visible: false });
             // Navigate to SOS tab to see the created emergency
@@ -416,10 +437,8 @@ export default function ReportEmergency() {
         setAlert({
           visible: true,
           type: "error",
-          title: "Submission Failed",
-          message:
-            response.error ||
-            "Failed to submit emergency report. Please try again.",
+          title: t("reportEmergency.submissionFailed"),
+          message: response.error || t("reportEmergency.error"),
         });
       }
     } catch (error: any) {
@@ -448,7 +467,9 @@ export default function ReportEmergency() {
       >
         {/* Emergency Type Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Emergency type</Text>
+          <Text style={styles.sectionTitle}>
+            {t("reportEmergency.selectType")}
+          </Text>
           <View style={styles.typeGrid}>
             {emergencyTypes.map((emergency) => (
               <TouchableOpacity
@@ -491,7 +512,7 @@ export default function ReportEmergency() {
             <View style={styles.otherTypeContainer}>
               <TextInput
                 style={styles.otherTypeInput}
-                placeholder="Please specify emergency type..."
+                placeholder={t("reportEmergency.otherType")}
                 placeholderTextColor="#999999"
                 value={otherEmergencyType}
                 onChangeText={setOtherEmergencyType}
@@ -502,7 +523,9 @@ export default function ReportEmergency() {
 
         {/* Location */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Location</Text>
+          <Text style={styles.sectionTitle}>
+            {t("reportEmergency.location")}
+          </Text>
           <View style={styles.locationCard}>
             <View style={styles.locationInfo}>
               <Ionicons name="location" size={20} color="#e6491e" />
@@ -513,14 +536,16 @@ export default function ReportEmergency() {
               activeOpacity={0.7}
               onPress={handleChangeLocation}
             >
-              <Text style={styles.changeButtonText}>Change</Text>
+              <Text style={styles.changeButtonText}>{t("common.edit")}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Attach Proof */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Attach proof</Text>
+          <Text style={styles.sectionTitle}>
+            {t("reportEmergency.attachProof")}
+          </Text>
           <View style={styles.attachmentGrid}>
             <TouchableOpacity
               style={styles.attachmentCard}
@@ -530,7 +555,9 @@ export default function ReportEmergency() {
               <View style={styles.attachmentIcon}>
                 <Ionicons name="camera" size={32} color="#e6491e" />
               </View>
-              <Text style={styles.attachmentLabel}>Click Pictures</Text>
+              <Text style={styles.attachmentLabel}>
+                {t("reportEmergency.clickPictures")}
+              </Text>
               {photos.length > 0 && (
                 <View style={styles.attachmentBadge}>
                   <Text style={styles.attachmentBadgeText}>
@@ -548,7 +575,9 @@ export default function ReportEmergency() {
               <View style={styles.attachmentIcon}>
                 <Ionicons name="videocam" size={32} color="#e6491e" />
               </View>
-              <Text style={styles.attachmentLabel}>Video Recording</Text>
+              <Text style={styles.attachmentLabel}>
+                {t("reportEmergency.videoRecording")}
+              </Text>
               {videos.length > 0 && (
                 <View style={styles.attachmentBadge}>
                   <Text style={styles.attachmentBadgeText}>
@@ -576,7 +605,9 @@ export default function ReportEmergency() {
                 />
               </View>
               <Text style={styles.attachmentLabel}>
-                {isRecording ? "Stop Recording" : "Voice Recording"}
+                {isRecording
+                  ? t("reportEmergency.stopRecording")
+                  : t("reportEmergency.voiceRecording")}
               </Text>
               {audioRecordings.length > 0 && !isRecording && (
                 <View style={styles.attachmentBadge}>
@@ -591,7 +622,9 @@ export default function ReportEmergency() {
           {/* Display Captured Photos */}
           {photos.length > 0 && (
             <View style={styles.capturedContent}>
-              <Text style={styles.capturedTitle}>Captured Photos</Text>
+              <Text style={styles.capturedTitle}>
+                {t("reportEmergency.capturedPhotos")}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -620,7 +653,9 @@ export default function ReportEmergency() {
           {/* Display Captured Videos */}
           {videos.length > 0 && (
             <View style={styles.capturedContent}>
-              <Text style={styles.capturedTitle}>Recorded Videos</Text>
+              <Text style={styles.capturedTitle}>
+                {t("reportEmergency.recordedVideos")}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -652,7 +687,9 @@ export default function ReportEmergency() {
           {/* Display Audio Recordings */}
           {audioRecordings.length > 0 && (
             <View style={styles.capturedContent}>
-              <Text style={styles.capturedTitle}>Audio Recordings</Text>
+              <Text style={styles.capturedTitle}>
+                {t("reportEmergency.audioRecordings")}
+              </Text>
               {audioRecordings.map((audio, index) => (
                 <View key={index} style={styles.audioItem}>
                   <TouchableOpacity
@@ -662,7 +699,9 @@ export default function ReportEmergency() {
                   >
                     <Ionicons name="play-circle" size={24} color="#e6491e" />
                     <Text style={styles.audioText}>
-                      Recording {index + 1} ({audio.duration.toFixed(1)}s)
+                      {t("reportEmergency.recording")} {index + 1} (
+                      {audio.duration.toFixed(1)}
+                      {t("reportEmergency.seconds")})
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => handleRemoveAudio(index)}>
@@ -676,10 +715,12 @@ export default function ReportEmergency() {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Specify emergency in brief</Text>
+          <Text style={styles.sectionTitle}>
+            {t("reportEmergency.specifyEmergency")}
+          </Text>
           <TextInput
             style={styles.descriptionInput}
-            placeholder="Describe the emergency situation..."
+            placeholder={t("reportEmergency.descriptionPlaceholder")}
             placeholderTextColor="#999999"
             multiline
             numberOfLines={6}
@@ -693,8 +734,7 @@ export default function ReportEmergency() {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={24} color="#0891b2" />
           <Text style={styles.infoText}>
-            Your location and contact information will be shared with emergency
-            services to ensure quick response.
+            {t("reportEmergency.infoMessage")}
           </Text>
         </View>
       </ScrollView>
@@ -708,7 +748,9 @@ export default function ReportEmergency() {
           disabled={isSubmitting}
         >
           <Text style={styles.submitButtonText}>
-            {isSubmitting ? "Submitting..." : "Submit Report"}
+            {isSubmitting
+              ? t("reportEmergency.submitting")
+              : t("reportEmergency.submit")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -724,10 +766,10 @@ export default function ReportEmergency() {
           <View style={styles.previewHeader}>
             <Text style={styles.previewTitle}>
               {previewType === "photo"
-                ? `Photo ${previewIndex + 1} of ${photos.length}`
+                ? `${t("reportEmergency.photo")} ${previewIndex + 1} ${t("reportEmergency.of")} ${photos.length}`
                 : previewType === "video"
-                  ? `Video ${previewIndex + 1} of ${videos.length}`
-                  : `Audio ${previewIndex + 1} of ${audioRecordings.length}`}
+                  ? `${t("reportEmergency.video")} ${previewIndex + 1} ${t("reportEmergency.of")} ${videos.length}`
+                  : `${t("reportEmergency.audio")} ${previewIndex + 1} ${t("reportEmergency.of")} ${audioRecordings.length}`}
             </Text>
             <TouchableOpacity
               onPress={() => setPreviewVisible(false)}

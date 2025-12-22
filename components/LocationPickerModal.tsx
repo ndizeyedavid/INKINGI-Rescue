@@ -38,6 +38,7 @@ export default function LocationPickerModal({
   const mapRef = useRef<MapView>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
+  const [isLocating, setIsLocating] = useState(false);
   const [translateY] = useState(new Animated.Value(0));
   const [userLocation, setUserLocation] =
     useState<Location.LocationObject | null>(null);
@@ -60,6 +61,7 @@ export default function LocationPickerModal({
 
   const getUserLocation = async () => {
     try {
+      setIsLocating(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
@@ -115,6 +117,7 @@ export default function LocationPickerModal({
       }
 
       mapRef.current?.animateToRegion(newRegion, 1000);
+      setIsLocating(false);
     } catch (error) {
       console.error("Location error:", error);
     }
@@ -270,7 +273,9 @@ export default function LocationPickerModal({
               activeOpacity={0.8}
             >
               <Ionicons name="navigate" size={16} color="#e6491e" />
-              <Text style={styles.trackLocationText}>Track my location</Text>
+              <Text style={styles.trackLocationText}>
+                {isLocating ? "Locating..." : "Track my location"}
+              </Text>
             </TouchableOpacity>
           </View>
 
