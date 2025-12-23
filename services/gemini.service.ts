@@ -17,6 +17,18 @@ interface Content {
   parts: { text: string }[];
 }
 
+interface IncidentReportDraft {
+  title: string;
+  description: string;
+}
+
+interface ResponderBrief {
+  priority: "Critical" | "High" | "Medium" | "Low";
+  risks: string[];
+  bring: string[];
+  firstActions: string[];
+}
+
 export class GeminiService {
   private modelName = "gemini-flash-lite-latest";
   private chatHistory: Content[] = [];
@@ -201,21 +213,23 @@ Format your response as a numbered list (1. 2. 3. 4. 5.) with no additional text
       });
 
       const responseText = result.response.text() || "";
-      
+
       // Parse the numbered list into an array
       const tips = responseText
-        .split('\n')
-        .filter(line => line.trim().match(/^\d+\./))
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(tip => tip.length > 0);
+        .split("\n")
+        .filter((line) => line.trim().match(/^\d+\./))
+        .map((line) => line.replace(/^\d+\.\s*/, "").trim())
+        .filter((tip) => tip.length > 0);
 
-      return tips.length > 0 ? tips : [
-        "Stay calm and assess the situation carefully.",
-        "Call emergency services (112) immediately if needed.",
-        "Ensure your own safety before helping others.",
-        "Follow instructions from emergency responders.",
-        "Keep emergency contacts readily available."
-      ];
+      return tips.length > 0
+        ? tips
+        : [
+            "Stay calm and assess the situation carefully.",
+            "Call emergency services (112) immediately if needed.",
+            "Ensure your own safety before helping others.",
+            "Follow instructions from emergency responders.",
+            "Keep emergency contacts readily available.",
+          ];
     } catch (error) {
       console.error("Error generating emergency tips:", error);
       // Return fallback tips
@@ -224,8 +238,196 @@ Format your response as a numbered list (1. 2. 3. 4. 5.) with no additional text
         "Call emergency services (112) immediately if needed.",
         "Ensure your own safety before helping others.",
         "Follow instructions from emergency responders.",
-        "Keep emergency contacts readily available."
+        "Keep emergency contacts readily available.",
       ];
+    }
+  }
+
+  async generateIncidentReportDraft(input: {
+    type: string;
+    location: string;
+    userNotes: string;
+    preferredLanguage?: string;
+  }): Promise<IncidentReportDraft> {
+    try {
+      const prompt = `Create a concise, high-quality emergency incident report draft based on the user's notes.
+
+Emergency Type: ${input.type}
+Location: ${input.location}
+User Notes: ${input.userNotes}
+Preferred Language: ${input.preferredLanguage || "English"}
+
+Return ONLY valid JSON with exactly these keys:
+{
+  "title": string,
+  "description": string
+}
+
+Rules:
+- Title: max 10 words, clear and specific.
+- Description: 4-8 lines, structured and actionable, include severity cues if present, avoid medical diagnosis, and include what help is needed.
+- Do not include markdown, code fences, or extra keys.`;
+
+      const model = genAI.getGenerativeModel({
+        model: this.modelName,
+      });
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          topP: 0.9,
+          topK: 40,
+          maxOutputTokens: 512,
+        },
+      });
+
+      const raw = (result.response.text() || "").trim();
+
+      const jsonStart = raw.indexOf("{");
+      const jsonEnd = raw.lastIndexOf("}");
+      const maybeJson =
+        jsonStart >= 0 && jsonEnd > jsonStart
+          ? raw.slice(jsonStart, jsonEnd + 1)
+          : raw;
+
+      const parsed = JSON.parse(maybeJson) as Partial<IncidentReportDraft>;
+
+      const title = typeof parsed.title === "string" ? parsed.title.trim() : "";
+      const description =
+        typeof parsed.description === "string" ? parsed.description.trim() : "";
+
+      if (!title || !description) {
+        return {
+          title: title || `${input.type} Emergency`,
+          description: description || input.userNotes.trim(),
+        };
+      }
+
+      return { title, description };
+    } catch (error) {
+      console.error("Error generating incident report draft:", error);
+      return {
+        title: `${input.type} Emergency`,
+        description: input.userNotes.trim(),
+      };
+    }
+  }
+
+  async generateResponderBrief(input: {
+    type: string;
+    title: string;
+    description: string;
+    address: string;
+    status?: string;
+    preferredLanguage?: string;
+  }): Promise<ResponderBrief> {
+    try {
+      const prompt = `You are assisting a responder/volunteer.
+
+Emergency Type: ${input.type}
+Title: ${input.title}
+Description: ${input.description}
+Location: ${input.address}
+Status: ${input.status || "unknown"}
+Preferred Language: ${input.preferredLanguage || "English"}
+
+Return ONLY valid JSON with exactly these keys:
+{
+  "priority": "Critical" | "High" | "Medium" | "Low",
+  "risks": string[],
+  "bring": string[],
+  "firstActions": string[]
+}
+
+Rules:
+- Keep each list item short (max ~8 words).
+- risks: 2-4 items.
+- bring: 3-6 items.
+- firstActions: 3-6 items.
+- No markdown, no code fences, no extra keys.`;
+
+      const model = genAI.getGenerativeModel({
+        model: this.modelName,
+      });
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          topP: 0.9,
+          topK: 40,
+          maxOutputTokens: 700,
+        },
+      });
+
+      const raw = (result.response.text() || "").trim();
+      const jsonStart = raw.indexOf("{");
+      const jsonEnd = raw.lastIndexOf("}");
+      const maybeJson =
+        jsonStart >= 0 && jsonEnd > jsonStart
+          ? raw.slice(jsonStart, jsonEnd + 1)
+          : raw;
+
+      const parsed = JSON.parse(maybeJson) as Partial<ResponderBrief>;
+
+      const priority =
+        parsed.priority === "Critical" ||
+        parsed.priority === "High" ||
+        parsed.priority === "Medium" ||
+        parsed.priority === "Low"
+          ? parsed.priority
+          : "Medium";
+
+      const risks = Array.isArray(parsed.risks)
+        ? parsed.risks.filter((x) => typeof x === "string").map((x) => x.trim())
+        : [];
+      const bring = Array.isArray(parsed.bring)
+        ? parsed.bring.filter((x) => typeof x === "string").map((x) => x.trim())
+        : [];
+      const firstActions = Array.isArray(parsed.firstActions)
+        ? parsed.firstActions
+            .filter((x) => typeof x === "string")
+            .map((x) => x.trim())
+        : [];
+
+      if (
+        risks.length === 0 ||
+        bring.length === 0 ||
+        firstActions.length === 0
+      ) {
+        return {
+          priority,
+          risks: risks.length
+            ? risks.slice(0, 4)
+            : ["Scene hazards", "Crowd control"],
+          bring: bring.length
+            ? bring.slice(0, 6)
+            : ["Phone", "Gloves", "First-aid kit"],
+          firstActions: firstActions.length
+            ? firstActions.slice(0, 6)
+            : ["Call emergency services", "Assess safety", "Provide basic aid"],
+        };
+      }
+
+      return {
+        priority,
+        risks: risks.slice(0, 4),
+        bring: bring.slice(0, 6),
+        firstActions: firstActions.slice(0, 6),
+      };
+    } catch (error) {
+      console.error("Error generating responder brief:", error);
+      return {
+        priority: "Medium",
+        risks: ["Scene hazards", "Crowd control"],
+        bring: ["Phone", "Gloves", "First-aid kit"],
+        firstActions: [
+          "Call emergency services",
+          "Assess safety",
+          "Provide basic aid",
+        ],
+      };
     }
   }
 }

@@ -76,11 +76,18 @@ interface EmergencyData {
   volunteers?: Volunteer[];
 }
 
+interface ResponderBrief {
+  priority: "Critical" | "High" | "Medium" | "Low";
+  risks: string[];
+  bring: string[];
+  firstActions: string[];
+}
+
 export default function ViewSos() {
   const params = useLocalSearchParams();
   const emergencyId = params.emergencyId as string;
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const mapRef = useRef<MapView>(null);
   const [loading, setLoading] = useState(true);
@@ -122,6 +129,10 @@ export default function ViewSos() {
   const videoRef = useRef<Video>(null);
   const [aiTips, setAiTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
+  const [responderBrief, setResponderBrief] = useState<ResponderBrief | null>(
+    null
+  );
+  const [loadingBrief, setLoadingBrief] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Get volunteers from emergency data
@@ -157,6 +168,9 @@ export default function ViewSos() {
 
         // Generate AI tips for this emergency
         generateAITips(response.data);
+
+        // Generate responder brief/triage
+        generateResponderBrief(response.data);
       } else {
         showAlert(
           "error",
@@ -201,11 +215,55 @@ export default function ViewSos() {
     }
   };
 
+  const generateResponderBrief = async (emergency: EmergencyData) => {
+    try {
+      setLoadingBrief(true);
+      const brief = await geminiService.generateResponderBrief({
+        type: emergency.type,
+        title: emergency.title,
+        description: emergency.description,
+        address: emergency.address,
+        status: emergency.status,
+        preferredLanguage: i18n.language,
+      });
+      setResponderBrief(brief);
+    } catch (error) {
+      console.error("Error generating responder brief:", error);
+      setResponderBrief({
+        priority: "Medium",
+        risks: ["Scene hazards", "Crowd control"],
+        bring: ["Phone", "Gloves", "First-aid kit"],
+        firstActions: [
+          "Call emergency services",
+          "Assess safety",
+          "Provide basic aid",
+        ],
+      });
+    } finally {
+      setLoadingBrief(false);
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchEmergencyDetails();
     await getUserLocation();
     setRefreshing(false);
+  };
+
+  const getPriorityColor = (priority: ResponderBrief["priority"]) => {
+    switch (priority) {
+      case "Critical":
+        return "#dc2626";
+      case "High":
+        return "#ea580c";
+      case "Medium":
+        return "#f59e0b";
+      case "Low":
+        return "#10b981";
+      default:
+        return "#6b7280";
+    }
   };
 
   const showAlert = (
@@ -828,6 +886,94 @@ export default function ViewSos() {
             ))}
           </View>
         )}
+
+        {/* AI Responder Brief Section */}
+        <View style={styles.briefContainer}>
+          <View style={styles.briefHeader}>
+            <View style={styles.briefHeaderLeft}>
+              <Ionicons name="shield-checkmark" size={20} color="#e6491e" />
+              <Text style={styles.briefHeaderText}>AI Responder Brief</Text>
+            </View>
+            {!!emergencyData && (
+              <TouchableOpacity
+                onPress={() => generateResponderBrief(emergencyData)}
+                activeOpacity={0.8}
+                disabled={loadingBrief}
+                style={[
+                  styles.briefRefreshButton,
+                  loadingBrief && { opacity: 0.6 },
+                ]}
+              >
+                <Ionicons name="refresh" size={18} color="#e6491e" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {loadingBrief ? (
+            <View style={styles.tipsLoadingContainer}>
+              <ActivityIndicator size="small" color="#e6491e" />
+              <Text style={styles.tipsLoadingText}>Generating brief...</Text>
+            </View>
+          ) : responderBrief ? (
+            <>
+              <View style={styles.priorityRow}>
+                <Text style={styles.priorityLabel}>Priority</Text>
+                <View
+                  style={[
+                    styles.priorityBadge,
+                    {
+                      backgroundColor: getPriorityColor(
+                        responderBrief.priority
+                      ),
+                    },
+                  ]}
+                >
+                  <Text style={styles.priorityBadgeText}>
+                    {responderBrief.priority}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.briefSection}>
+                <Text style={styles.briefSectionTitle}>Risks</Text>
+                <View style={styles.briefList}>
+                  {responderBrief.risks.map((item, idx) => (
+                    <View key={idx} style={styles.briefListItem}>
+                      <Text style={styles.briefBullet}>-</Text>
+                      <Text style={styles.briefItemText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.briefSection}>
+                <Text style={styles.briefSectionTitle}>Bring</Text>
+                <View style={styles.briefList}>
+                  {responderBrief.bring.map((item, idx) => (
+                    <View key={idx} style={styles.briefListItem}>
+                      <Text style={styles.briefBullet}>-</Text>
+                      <Text style={styles.briefItemText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.briefSection}>
+                <Text style={styles.briefSectionTitle}>First actions</Text>
+                <View style={styles.briefList}>
+                  {responderBrief.firstActions.map((item, idx) => (
+                    <View key={idx} style={styles.briefListItem}>
+                      <Text style={styles.briefBullet}>-</Text>
+                      <Text style={styles.briefItemText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.briefEmptyText}>No brief generated yet.</Text>
+          )}
+        </View>
 
         {/* AI-Generated Tips Section */}
         <View style={styles.tipsContainer}>
@@ -1480,6 +1626,92 @@ const styles = StyleSheet.create({
   },
   tipsLoadingText: {
     fontSize: 14,
+    color: "#666666",
+    fontStyle: "italic",
+  },
+  briefContainer: {
+    backgroundColor: "#fff8f5",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#ffe5d9",
+    marginBottom: 16,
+  },
+  briefHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  briefHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  briefHeaderText: {
+    fontSize: 14,
+    color: "#e6491e",
+    fontWeight: "600",
+  },
+  briefRefreshButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#ffe5d9",
+  },
+  priorityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  priorityLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  priorityBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  priorityBadgeText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#ffffff",
+  },
+  briefSection: {
+    marginTop: 10,
+  },
+  briefSectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000000",
+    marginBottom: 8,
+  },
+  briefList: {
+    gap: 8,
+  },
+  briefListItem: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  briefBullet: {
+    fontSize: 14,
+    color: "#e6491e",
+    fontWeight: "900",
+    minWidth: 14,
+  },
+  briefItemText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#666666",
+    lineHeight: 20,
+  },
+  briefEmptyText: {
+    fontSize: 13,
     color: "#666666",
     fontStyle: "italic",
   },

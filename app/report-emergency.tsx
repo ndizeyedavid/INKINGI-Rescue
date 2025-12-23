@@ -1,6 +1,7 @@
 import CustomAlert from "@/components/CustomAlert";
 import LocationPickerModal from "@/components/LocationPickerModal";
 import { emergencyApi } from "@/services/api/api.service";
+import { geminiService } from "@/services/gemini.service";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Audio, Video } from "expo-av";
 import * as ImagePicker from "expo-image-picker";
@@ -37,13 +38,15 @@ interface EmergencyOption {
 
 export default function ReportEmergency() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedType, setSelectedType] = useState<EmergencyType | null>(null);
   const [otherEmergencyType, setOtherEmergencyType] = useState("");
   const [location, setLocation] = useState("Kimisagara, KK 301");
   const [latitude, setLatitude] = useState(-1.9403);
   const [longitude, setLongitude] = useState(30.0619);
+  // const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [audioRecordings, setAudioRecordings] = useState<
@@ -126,6 +129,68 @@ export default function ReportEmergency() {
     const typeLabel =
       emergencyTypes.find((e) => e.type === type)?.label || "Emergency";
     return `${typeLabel} Emergency Alert`;
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!selectedType) {
+      setAlert({
+        visible: true,
+        type: "warning",
+        title: t("reportEmergency.requiredField"),
+        message: t("reportEmergency.selectTypeError"),
+      });
+      return;
+    }
+
+    if (selectedType === "other" && !otherEmergencyType.trim()) {
+      setAlert({
+        visible: true,
+        type: "warning",
+        title: t("reportEmergency.requiredField"),
+        message: t("reportEmergency.selectTypeError"),
+      });
+      return;
+    }
+
+    if (!description.trim()) {
+      setAlert({
+        visible: true,
+        type: "warning",
+        title: t("reportEmergency.requiredField"),
+        message: t("reportEmergency.descriptionPlaceholder"),
+      });
+      return;
+    }
+
+    try {
+      setIsGeneratingAi(true);
+
+      const typeLabel =
+        selectedType === "other"
+          ? otherEmergencyType.trim()
+          : emergencyTypes.find((e) => e.type === selectedType)?.label ||
+            selectedType;
+
+      const draft = await geminiService.generateIncidentReportDraft({
+        type: typeLabel,
+        location,
+        userNotes: description.trim(),
+        preferredLanguage: i18n.language,
+      });
+
+      // if (draft?.title) setTitle(draft.title);
+      if (draft?.description) setDescription(draft.description);
+    } catch (error) {
+      console.error("AI draft error:", error);
+      setAlert({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: "Failed to generate draft. Please try again.",
+      });
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   const handleChangeLocation = async () => {
@@ -429,6 +494,7 @@ export default function ReportEmergency() {
         // Reset form
         setSelectedType(null);
         setOtherEmergencyType("");
+        // setTitle("");
         setDescription("");
         setPhotos([]);
         setVideos([]);
@@ -715,9 +781,44 @@ export default function ReportEmergency() {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("reportEmergency.specifyEmergency")}
-          </Text>
+          <View
+            style={{
+              flexDirection: "column",
+              // justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 10,
+              marginBottom: 16,
+            }}
+          >
+            <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+              {t("reportEmergency.specifyEmergency")}
+            </Text>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleGenerateWithAI}
+              disabled={isGeneratingAi}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 10,
+                backgroundColor: "#fff5f2",
+                borderWidth: 1,
+                borderColor: "#e6491e",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                opacity: isGeneratingAi ? 0.6 : 1,
+              }}
+            >
+              <Ionicons name="sparkles" size={24} color="#e6491e" />
+
+              <Text style={{ color: "#e6491e", fontWeight: "700" }}>
+                {isGeneratingAi ? "Generating..." : "Generate with AI"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TextInput
             style={styles.descriptionInput}
             placeholder={t("reportEmergency.descriptionPlaceholder")}

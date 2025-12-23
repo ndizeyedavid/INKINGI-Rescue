@@ -13,7 +13,8 @@ export const API_CONFIG = {
   // Development
   BASE_URL: __DEV__
     ? "http://DESKTOP-71JSF5O:3000" // Local development server
-    : "https://your-production-api.com", // Production server
+    : // ? "https://86de4f2af0a7.ngrok-free.app" // Local development server
+      "https://your-production-api.com", // Production server
 
   TIMEOUT: 30000, // 2 minutes
 
